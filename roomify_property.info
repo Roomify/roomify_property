@@ -1,0 +1,11 @@
+name = Roomify Property
+description = Provides an entity to group types by property
+core = 7.x
+
+package = Roomify
+
+files[] = roomify_property.admin.inc
+files[] = roomify_property_type.admin.inc
+files[] = views/roomify_property.views.inc
+files[] = views/roomify_property_handler_delete_link_field.inc
+files[] = views/roomify_property_handler_edit_link_field.inc

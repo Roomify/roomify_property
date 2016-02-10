@@ -1,0 +1,441 @@
+<?php
+
+/**
+ * @file
+ */
+
+/**
+ * Implements hook_entity_info().
+ */
+function roomify_property_entity_info() {
+  $return['roomify_property'] = array(
+    'label' => t('Roomify Property'),
+    // The entity class and controller class extend the classes provided by the
+    // Entity API.
+    'entity class' => 'RoomifyProperty',
+    'controller class' => 'RoomifyPropertyController',
+    'base table' => 'roomify_properties',
+    'fieldable' => TRUE,
+    'entity keys' => array(
+      'id' => 'property_id',
+      'bundle' => 'type',
+      'label' => 'name',
+    ),
+    // Bundles are defined by the property bundles below.
+    'bundles' => array(),
+    // Bundle keys tell the FieldAPI how to extract information from the bundle
+    // objects.
+    'bundle keys' => array(
+      'bundle' => 'type',
+    ),
+    'label callback' => 'entity_class_label',
+    'uri callback' => 'entity_class_uri',
+    'creation callback' => 'roomify_property_create',
+    'access callback' => 'roomify_property_access',
+    'access arguments' => array(
+      'user key' => 'uid',
+      'access tag' => 'roomify_property_access',
+    ),
+    'permission labels' => array(
+      'singular' => t('property'),
+      'plural' => t('properties'),
+    ),
+    'module' => 'roomify_property',
+    // The information below is used by the RoomifyPropertyUIController (which extends
+    // the EntityDefaultUIController).
+    'admin ui' => array(
+      'path' => 'admin/bat/config/property',
+      'file' => 'roomify_property.admin.inc',
+      'controller class' => 'RoomifyPropertyUIController',
+      'menu wildcard' => '%roomify_property',
+    ),
+    'translation' => array(
+      'entity_translation' => array(
+        'base path' => 'admin/bat/config/property/%roomify_property',
+        'default settings' => array(
+          'default_language' => LANGUAGE_NONE,
+          'hide_language_selector' => FALSE,
+        ),
+      ),
+    ),
+  );
+
+  $return['roomify_property_type'] = array(
+    'label' => t('Roomify Property Type'),
+    'entity class' => 'RoomifyPropertyType',
+    'controller class' => 'RoomifyPropertyTypeController',
+    'base table' => 'roomify_property_types',
+    'fieldable' => TRUE,
+    'bundle of' => 'roomify_property',
+    'exportable' => TRUE,
+    'entity keys' => array(
+      'id' => 'id',
+      'name' => 'type',
+      'label' => 'label',
+    ),
+    'access callback' => 'roomify_property_type_access',
+    'module' => 'roomify_property',
+    // Enable the entity API's admin UI.
+    'admin ui' => array(
+      'path' => 'admin/bat/config/property-types',
+      'file' => 'roomify_property_type.admin.inc',
+      'controller class' => 'RoomifyPropertyTypeUIController',
+    ),
+  );
+
+  return $return;
+}
+
+/**
+ * Implements hook_entity_info_alter().
+ *
+ * We are adding the info about the property types via a hook to avoid a recursion
+ * issue as loading the room types requires the entity info as well.
+ */
+function roomify_property_entity_info_alter(&$entity_info) {
+  foreach (roomify_property_get_types() as $type => $info) {
+    $entity_info['roomify_property']['bundles'][$type] = array(
+      'label' => $info->label,
+      'admin' => array(
+        'path' => 'admin/bat/config/property-types/manage/%roomify_property_type',
+        'real path' => 'admin/bat/config/property-types/manage/' . $type,
+        'bundle argument' => 5,
+        'access arguments' => array('bypass roomify_property entities access'),
+      ),
+    );
+  }
+}
+
+/**
+ * Implements hook_permission().
+ */
+function roomify_property_permission() {
+  $permissions = array();
+
+  // Permission for Roomify Property Types.
+  $permissions += array(
+    'administer roomify_property_type entities' => array(
+      'title' => t('Administer property types'),
+      'description' => t('Allows users to add property types and configure their fields.'),
+      'restrict access' => TRUE,
+    ),
+  );
+
+  $permissions += bat_entity_access_permissions('roomify_property');
+
+  return $permissions;
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function roomify_property_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'roomify_property') . '/views',
+  );
+}
+
+/**
+ * Determines whether the given user has access to a property.
+ *
+ * @param string $op
+ *   The operation being performed. One of 'view', 'update', 'create', 'delete'
+ *   or just 'edit' (being the same as 'create' or 'update').
+ * @param RoomifyProperty $property
+ *   Optionally a property to check access for. If nothing is
+ *   given, access for all properties is determined.
+ * @param object $account
+ *   The user to check for. Leave it to NULL to check for the global user.
+ *
+ * @return boolean
+ *   Whether access is allowed or not.
+ */
+function roomify_property_access($op, $property = NULL, $account = NULL) {
+  return bat_entity_access($op, $property, $account, 'roomify_property');
+}
+
+/**
+ * Access callback: Checks whether the user has permission to add a property.
+ *
+ * @return bool
+ *   TRUE if the user has add permission, otherwise FALSE.
+ */
+function roomify_property_add_access() {
+  if (user_access('administer roomify_property_type entities')) {
+    return TRUE;
+  }
+
+  $bundles = roomify_property_get_types();
+  foreach ($bundles as $bundle) {
+    if (roomify_property_access('create', roomify_property_create(array('type' => $bundle->type, 'uid' => 0)))) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * The class used for property entities
+ */
+class RoomifyProperty extends Entity {
+
+  public function __construct($values = array()) {
+    parent::__construct($values, 'roomify_property');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function defaultLabel() {
+    return $this->name;
+  }
+
+}
+
+/**
+ * The class used for property type entities
+ */
+class RoomifyPropertyType extends Entity {
+
+  /**
+   * The property type.
+   *
+   * @var string
+   */
+  public $type;
+
+  /**
+   * The property type label.
+   *
+   * @var string
+   */
+  public $label;
+
+  public function __construct($values = array()) {
+    parent::__construct($values, 'roomify_property_type');
+  }
+
+}
+
+/**
+ * The Controller for RoomifyProperty entities
+ */
+class RoomifyPropertyController extends EntityAPIController {
+
+  public function __construct($entityType) {
+    parent::__construct($entityType);
+  }
+
+  public function create(array $values = array()) {
+    $values += array(
+      'property_id' => '',
+      'is_new' => TRUE,
+      'data' => '',
+      'name' => '',
+      'created' => '',
+    );
+
+    $property = parent::create($values);
+
+    return $property;
+  }
+
+  /**
+   * Overriding the buildContent function to add entity specific fields.
+   */
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+    $content = parent::buildContent($entity, $view_mode, $langcode, $content);
+
+    return $content;
+  }
+
+}
+
+/**
+ * The Controller for RoomifyPropertyType entities
+ */
+class RoomifyPropertyTypeController extends EntityAPIControllerExportable {
+
+  public function __construct($entityType) {
+    parent::__construct($entityType);
+  }
+
+  public function create(array $values = array()) {
+    $values += array(
+      'id' => '',
+      'is_new' => TRUE,
+      'data' => '',
+    );
+
+    $property_type = parent::create($values);
+
+    return $property_type;
+  }
+
+}
+
+function roomify_property_type_access() {
+  return TRUE;
+}
+
+/**
+ * Create a property object.
+ */
+function roomify_property_create($values = array()) {
+  return entity_get_controller('roomify_property')->create($values);
+}
+
+/**
+ * Create a property type object.
+ */
+function roomify_property_type_create($values = array()) {
+  return entity_get_controller('roomify_property_type')->create($values);
+}
+
+/**
+ * Menu argument loader; Load a property type by string.
+ *
+ * @param $type
+ *   The machine-readable name of a property type to load.
+ * @param bool $reset
+ *   A boolean indicating whether the internal cache should be reset.
+ *
+ * @return array|false
+ *   A property type array or FALSE if $type does not exist.
+ */
+function roomify_property_type_load($type, $reset = FALSE) {
+  return roomify_property_get_types($type, $reset);
+}
+
+/**
+ * Gets an array of all property types, keyed by the type name.
+ *
+ * @param string $type_name
+ *   If set, the type with the given name is returned.
+ * @param bool $reset
+ *   A boolean indicating that the internal cache should be reset.
+ *
+ * @return RoomifyPropertyType[]
+ *   Depending whether $type isset, an array of property types or a single one.
+ */
+function roomify_property_get_types($type_name = NULL, $reset = FALSE) {
+  // entity_load() will get the Entity controller for our property type
+  // entity and call the load function of that object.
+  $types = entity_load_multiple_by_name('roomify_property_type', isset($type_name) ? array($type_name) : FALSE);
+  return isset($type_name) ? reset($types) : $types;
+}
+
+/**
+ * Saves a property type to the db.
+ *
+ * @param RoomifyPropertyType $property_type
+ *   The property type to save.
+ */
+function roomify_property_type_save(RoomifyPropertyType $property_type) {
+  $property_type->save();
+}
+
+/**
+ * Deletes a property type from the db.
+ */
+function roomify_property_type_delete(RoomifyPropertyType $bundle) {
+  $bundle->delete();
+}
+
+/**
+ * Fetches a property object.
+ *
+ * @param int $property_id
+ *   Integer specifying the property id.
+ * @param bool $reset
+ *   A boolean indicating whether the internal cache should be reset.
+ * @return RoomifyProperty|false
+ *   A fully-loaded $property object or FALSE if it cannot be loaded.
+ *
+ * @see roomify_property_load_multiple()
+ */
+function roomify_property_load($property_id, $reset = FALSE) {
+  $properties = roomify_property_load_multiple(array($property_id), array(), $reset);
+  return reset($properties);
+}
+
+/**
+ * Loads multiple properties based on certain conditions.
+ *
+ * @param array $property_ids
+ *   An array of property IDs.
+ * @param array $conditions
+ *   An array of conditions to match against the {roomify_properties} table.
+ * @param bool $reset
+ *   A boolean indicating that the internal cache should be reset.
+ *
+ * @return array
+ *   An array of property objects, indexed by property_id.
+ *
+ * @see entity_load()
+ * @see roomify_property_load()
+ */
+function roomify_property_load_multiple($property_ids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('roomify_property', $property_ids, $conditions, $reset);
+}
+
+/**
+ * Implements hook_theme().
+ */
+function roomify_property_theme() {
+  return array(
+    'roomify_property_add_list' => array(
+      'variables' => array('content' => array()),
+      'file' => 'roomify_property.admin.inc',
+    ),
+  );
+}
+
+/**
+ * Add "Type" reference field.
+ */
+function roomify_property_add_bat_type_reference_field($type_bundle) {
+  field_info_cache_clear();
+
+  // "property_bat_type_reference" field.
+  if (field_read_field('property_bat_type_reference') === FALSE) {
+    $field = array(
+      'field_name' => 'property_bat_type_reference',
+      'type' => 'entityreference',
+      'cardinality' => -1,
+      'locked' => 1,
+      'settings' => array(
+        'target_type' => 'bat_type',
+      ),
+    );
+    field_create_field($field);
+  }
+
+  field_cache_clear();
+
+  // "property_bat_type_reference" field instance.
+  if (field_read_instance('roomify_property', 'property_bat_type_reference', $type_bundle) === FALSE) {
+    $instance = array(
+      'field_name' => 'property_bat_type_reference',
+      'entity_type' => 'roomify_property',
+      'label' => 'Type',
+      'bundle' => $type_bundle,
+      'required' => FALSE,
+      'widget' => array(
+        'type' => 'entityreference_autocomplete',
+      ),
+    );
+    field_create_instance($instance);
+  }
+}
+
+/**
+ * Implements hook_entity_insert().
+ */
+function roomify_property_entity_insert($entity, $type) {
+  if ($type == 'roomify_property_type') {
+    roomify_property_add_bat_type_reference_field($entity->type);
+  }
+}
