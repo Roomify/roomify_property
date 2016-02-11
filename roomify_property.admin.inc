@@ -14,6 +14,7 @@ class RoomifyPropertyUIController extends EntityDefaultUIController {
    */
   public function hook_menu() {
     $items = parent::hook_menu();
+    $items[$this->path]['title'] = 'Roomify Properties';
 
     // Change the add page menu to multiple types of entities.
     $items[$this->path . '/add']['title'] = 'Add a Property';
