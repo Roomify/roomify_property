@@ -447,6 +447,14 @@ function roomify_property_add_bat_type_reference_field($type_bundle) {
         'type' => 'entityreference_autocomplete',
       ),
     );
+
+    // Check for IEF integration and use IEF widget if present.
+    $entity_info = entity_get_info('bat_type');
+    if (isset($entity_info['inline entity form'])) {
+      $instance['widget']['type'] = 'inline_entity_form';
+    }
+
+    // Create field instance.
     field_create_instance($instance);
   }
 }
