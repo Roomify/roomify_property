@@ -382,6 +382,26 @@ function roomify_property_load_multiple($property_ids = array(), $conditions = a
 }
 
 /**
+ * Deletes a property.
+ *
+ * @param RoomifyProperty $property
+ *   The RoomifyProperty object that represents the property to delete.
+ */
+function roomify_property_delete(RoomifyProperty $property) {
+  $property->delete();
+}
+
+/**
+ * Deletes multiple properties.
+ *
+ * @param array $property_ids
+ *   An array of property IDs.
+ */
+function roomify_property_delete_multiple(array $property_ids) {
+  entity_get_controller('roomify_property')->delete($property_ids);
+}
+
+/**
  * Implements hook_theme().
  */
 function roomify_property_theme() {
