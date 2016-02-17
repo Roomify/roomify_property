@@ -49,6 +49,7 @@ function roomify_property_entity_info() {
       'controller class' => 'RoomifyPropertyUIController',
       'menu wildcard' => '%roomify_property',
     ),
+    'metadata controller class' => 'RoomifyPropertyMetadataController',
     'translation' => array(
       'entity_translation' => array(
         'base path' => 'admin/bat/config/property/%roomify_property',
@@ -215,6 +216,28 @@ class RoomifyPropertyType extends Entity {
 
   public function __construct($values = array()) {
     parent::__construct($values, 'roomify_property_type');
+  }
+
+}
+
+/**
+ * The MetadataController for RoomifyProperty entities
+ */
+class RoomifyPropertyMetadataController extends EntityDefaultMetadataController {
+
+  public function entityPropertyInfo() {
+    $info = parent::entityPropertyInfo();
+
+    $properties = array('property_id', 'type', 'language', 'name', 'created', 'changed', 'uid');
+
+    foreach ($properties as $property) {
+      if (isset($info['roomify_property']['properties'][$property])) {
+        $info['roomify_property']['properties'][$property]['getter callback'] = 'entity_property_verbatim_get';
+        $info['roomify_property']['properties'][$property]['setter callback'] = 'entity_property_verbatim_set';
+      }
+    }
+
+    return $info;
   }
 
 }
