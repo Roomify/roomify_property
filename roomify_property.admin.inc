@@ -207,6 +207,15 @@ function roomify_property_edit_form_submit(&$form, &$form_state) {
   $property->created = !empty($property->date) ? strtotime($property->date) : REQUEST_TIME;
   $property->changed = time();
 
+  if (isset($property->author_name)) {
+    if ($account = user_load_by_name($property->author_name)) {
+      $property->uid = $account->uid;
+    }
+    else {
+      $property->uid = 0;
+    }
+  }
+
   $property->save();
   drupal_set_message(t('Property @name saved', array('@name' => $property->name)));
 
