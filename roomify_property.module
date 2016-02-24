@@ -490,3 +490,29 @@ function roomify_property_entity_insert($entity, $type) {
     roomify_property_add_bat_type_reference_field($entity->type);
   }
 }
+
+/**
+ * Gets a list of Roomify Properties keyed by id and name in value.
+ */
+function roomify_property_ids($bundle = '') {
+  $properties = array();
+
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'roomify_property');
+
+  if ($bundle != '') {
+    $query->entityCondition('bundle', $bundle);
+  }
+
+  $result = $query->execute();
+
+  if (count($result) > 0) {
+    $entities = entity_load('roomify_property', array_keys($result['roomify_property']));
+    foreach ($entities as $type) {
+      $wrapper = entity_metadata_wrapper('roomify_property', $type);
+      $properties[$wrapper->property_id->value()] = $wrapper->name->value();
+    }
+  }
+
+  return $properties;
+}
