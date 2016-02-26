@@ -494,14 +494,14 @@ function roomify_property_entity_insert($entity, $type) {
   if ($type == 'roomify_property') {
     $types_reference = field_get_items($type, $entity, 'property_bat_type_reference');
     foreach ($types_reference as $reference) {
-      $type = bat_type_load($reference['target_id']);
-      $bat_units = bat_unit_load_multiple(FALSE, array('type_id' => $type->type_id));
+      $type_referenced = bat_type_load($reference['target_id']);
+      $bat_units = bat_unit_load_multiple(FALSE, array('type_id' => $type_referenced->type_id));
       if (empty($bat_units)) {
         $unit = bat_unit_create(array('type' => 'default'));
-        $unit->name = $type->name . ' 1';
+        $unit->name = $type_referenced->name . ' 1';
         $unit->created = !empty($unit->date) ? strtotime($unit->date) : REQUEST_TIME;
 
-        $unit->type_id = $type->type_id;
+        $unit->type_id = $type_referenced->type_id;
         $unit->default_state = 1;
         $unit->uid = $user->uid;
         $unit->save();
