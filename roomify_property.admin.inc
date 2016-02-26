@@ -184,6 +184,15 @@ function roomify_property_edit_form($form, &$form_state, $property) {
     '#value' => t('Save Property'),
     '#submit' => $submit + array('roomify_property_edit_form_submit'),
   );
+  if (!empty($property->name) && roomify_property_access('delete', $property)) {
+    $form['actions']['delete'] = array(
+      '#type' => 'submit',
+      '#value' => t('Delete Property'),
+      '#suffix' => l(t('Cancel'), 'admin/bat/config/property'),
+      '#submit' => $submit + array('roomify_property_form_submit_delete'),
+      '#weight' => 45,
+    );
+  }
 
   $form['#validate'][] = 'roomify_property_edit_form_validate';
 
@@ -220,6 +229,13 @@ function roomify_property_edit_form_submit(&$form, &$form_state) {
   drupal_set_message(t('Property @name saved', array('@name' => $property->name)));
 
   $form_state['redirect'] = 'admin/bat/config/property';
+}
+
+/**
+ * Form API submit callback for the delete button.
+ */
+function roomify_property_form_submit_delete(&$form, &$form_state) {
+  $form_state['redirect'] = 'admin/bat/config/property/manage/' . $form_state['roomify_property']->property_id . '/delete';
 }
 
 /**
