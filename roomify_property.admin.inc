@@ -25,12 +25,24 @@ class RoomifyPropertyUIController extends EntityDefaultUIController {
 
     // Add property type specific calendar menu item.
     $items[$this->path . '/manage/%roomify_property/calendar/availability'] = array(
-      'title' => 'Calendar',
+      'title' => 'Manage availability',
       'page callback' => 'roomify_property_calendar_wrapper',
-      'page arguments' => array(5),
+      'page arguments' => array(5, 'availability'),
       'access callback' => 'roomify_property_add_access',
       'file' => 'roomify_property.admin.inc',
       'file path' => drupal_get_path('module', $this->entityInfo['module']),
+      'type' => MENU_LOCAL_TASK,
+    );
+
+    // Add property type specific calendar menu item.
+    $items[$this->path . '/manage/%roomify_property/calendar/pricing'] = array(
+      'title' => 'Manage pricing',
+      'page callback' => 'roomify_property_calendar_wrapper',
+      'page arguments' => array(5, 'pricing'),
+      'access callback' => 'roomify_property_add_access',
+      'file' => 'roomify_property.admin.inc',
+      'file path' => drupal_get_path('module', $this->entityInfo['module']),
+      'type' => MENU_LOCAL_TASK,
     );
 
     // Add menu items to add each different type of properties.
@@ -97,13 +109,13 @@ function roomify_property_form($form, &$form_state, $property, $op = 'edit') {
 }
 
 /**
- * Show output from property type-specific calendar pages under the property
- * admin.
+ * Show output from property type-specific calendar pages under the property admin.
  */
-function roomify_property_calendar_wrapper($property) {
+function roomify_property_calendar_wrapper($property, $event_type) {
   $property_type = str_replace('_property', '', $property->type);
   $function = 'roomify_' . $property_type . '_event_ui_calendar_page';
-  return(call_user_func($function, $property->property_id, 'availability'));
+
+  return(call_user_func($function, $property->property_id, $event_type));
 }
 
 /**
