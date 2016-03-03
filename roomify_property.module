@@ -561,6 +561,15 @@ function roomify_property_ids($bundle = '') {
 function roomify_property_views_pre_render(&$view) {
   if ($view->name == 'properties') {
     drupal_add_css(drupal_get_path('module', 'roomify_property') . '/css/property_wizard.css');
+    drupal_add_js(array(
+      'property-wizard-modal-style' => array(
+        'modalSize' => array(
+          'type' => 'fixed',
+          'width' => 0,
+          'height' => 0,
+        ),
+      ),
+    ), 'setting');
   }
 }
 
