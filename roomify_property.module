@@ -553,6 +553,18 @@ function roomify_property_ids($bundle = '') {
 }
 
 /**
+ * Implements hook_views_pre_render().
+ *
+ * Add our custom CSS for the modal when displaying properties view.
+ * We do this to prevent the modal "flashing" when first loading.
+ */
+function roomify_property_views_pre_render(&$view) {
+  if ($view->name == 'properties') {
+    drupal_add_css(drupal_get_path('module', 'roomify_property') . '/css/property_wizard.css');
+  }
+}
+
+/**
  * Callback for Add property wizard
  */
 function roomify_property_wizard($ajax) {
@@ -672,6 +684,10 @@ function roomify_property_wizard_form_next_submit($form, &$form_state) {
  */
 function roomify_property_wizard_form_property_name($form, &$form_state) {
   $form = array();
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'roomify_property') . '/css/property_wizard.css',
+    drupal_get_path('module', 'roomify_property') . '/css/property_name.css',
+  );
 
   $form['property_name'] = array(
     '#type' => 'textfield',
@@ -715,6 +731,10 @@ function roomify_property_wizard_form_property_name($form, &$form_state) {
  */
 function roomify_property_wizard_form_type_info($form, &$form_state) {
   $form = array();
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'roomify_property') . '/css/property_wizard.css',
+  );
+
   $form['property_title'] = array(
     '#markup' => '<h2>' . $form_state['step_information'][1]['stored_values']['property_name'] . '</h2>'
   );
@@ -722,6 +742,7 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
   // Change the form elements we provide based on the property type.
   switch ($form_state['step_information'][1]['stored_values']['property_type']) {
     case 'casa_property':
+      $form['#attached']['css'][] = drupal_get_path('module', 'roomify_property') . '/css/property_type_casa.css';
       $form['container'] = array(
         '#type' => 'container',
         '#attributes' => array(
@@ -746,6 +767,7 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
       );
       break;
     case 'locanda_property':
+      $form['#attached']['css'][] = drupal_get_path('module', 'roomify_property') . '/css/property_type_locanda.css';
       // Because we have many fields with the same values, we have to set
       // #tree to be able to access them.
       $form['#tree'] = TRUE;

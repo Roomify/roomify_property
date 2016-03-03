@@ -1,0 +1,22 @@
+#roomify-property-wizard-form .form-item-property-name {
+  margin-left: 40px;
+  vertical-align: middle;
+}
+#roomify-property-wizard-form .form-item-property-name label {
+  padding-top: 5px;
+}
+#modalContent div.ctools-modal-content div.form-radios div.form-item {
+  display:inline;
+  margin-left: 40px;
+}
+#modalContent div.ctools-modal-content div.form-radios div.form-item label {
+  display:inline-block;
+  max-width: 250px;
+  vertical-align: middle;
+}
+#modalContent div.ctools-modal-content div.form-radios div.form-item label[for=edit-property-type-casa-property] {
+  padding-bottom: 9px;
+}
+#modalContent div.ctools-modal-content div.form-radios div.form-item label[for=edit-property-type-locanda-property] {
+  padding-top: 9px;
+}
