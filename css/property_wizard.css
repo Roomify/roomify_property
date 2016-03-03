@@ -5,17 +5,12 @@
   display: none;
 }
 /* Add a nice drop shadow. */
-#modalContent {
+#modalContent div.ctools-modal-content {
   -webkit-box-shadow:0 0 10px rgba(0, 0, 0, 0.5);
   -moz-box-shadow:0 0 10px rgba(0, 0, 0, 0.5);
   box-shadow:0 0 10px rgba(0, 0, 0, 0.5);
-}
-/* Hide the default border and set background color. */
-#modalContent div.ctools-modal-content {
   background: #F7F7F7;
   border: none;
-  width: 600px !important;
-  height: 160px !important;
 }
 /* Button styling. */
 #modalContent div.ctools-modal-content input[type=submit] {

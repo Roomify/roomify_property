@@ -1,10 +1,39 @@
 (function ($) {
 
-/*
- * Default settings for all BAT datepickers that come in pairs.
+/**
+ * Property Wizard JS.
  */
 Drupal.behaviors.propertyWizard = {
   attach: function(context) {
+
+    // Auto modal sizing stuff.
+    Drupal.CTools.Modal.currentSettings.modalSize.width = '100px';
+    Drupal.CTools.Modal.currentSettings.modalSize.height = '100px';
+
+    var winHeight = $(window).height();
+    var winWidth = $(window).width();
+
+    // Use the additional pixels for creating the width and height.
+    $('div.ctools-modal-content', context).css({
+      'min-width': Drupal.CTools.Modal.currentSettings.modalSize.width,
+      'min-height': Drupal.CTools.Modal.currentSettings.modalSize.height,
+      'width': 'auto',
+      'height': 'auto',
+      'max-height': (winHeight / 2) * 1.6 + 'px',
+      'max-width': (winWidth / 2) * 1.6 + 'px',
+      'overflow': 'none'
+    });
+
+    $('div#modal-content', context).css({
+      'height': 'auto',
+      'width': 'auto',
+    });
+
+    $('#modalContent').css({'width': 'auto'});
+    $('div.ctools-modal-content .modal-content', context).css("overflow", "hidden");
+
+
+    // Messing aboot wi' the bootons.
 
     // Disable submit buttons.
     $('input[name=next]').prop('disabled', true);

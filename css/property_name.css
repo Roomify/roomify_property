@@ -20,3 +20,6 @@
 #modalContent div.ctools-modal-content div.form-radios div.form-item label[for=edit-property-type-locanda-property] {
   padding-top: 9px;
 }
+#modalContent div.ctools-modal-content input[id^=edit-next] {
+  float: right;
+}
