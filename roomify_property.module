@@ -5,6 +5,22 @@
  */
 
 /**
+ * Implements hook_menu().
+ */
+function roomify_property_menu() {
+  $items = array();
+
+  $items['admin/bat/config/property/wizard/%ctools_js'] = array(
+    'page callback' => 'roomify_property_wizard',
+    'page arguments' => array(5),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
  * Implements hook_entity_info().
  */
 function roomify_property_entity_info() {
@@ -534,4 +550,349 @@ function roomify_property_ids($bundle = '') {
   }
 
   return $properties;
+}
+
+/**
+ * Callback for Add property wizard
+ */
+function roomify_property_wizard($ajax) {
+  if ($ajax) {
+    ctools_include('ajax');
+    ctools_include('modal');
+
+    $form_state = array(
+      'ajax' => TRUE,
+      'title' => t('Add New Property'),
+    );
+
+    // Use ctools to generate ajax instructions for the browser to create
+    // a form in a modal popup.
+    $output = ctools_modal_form_wrapper('roomify_property_wizard_form', $form_state);
+
+    // If the form has been submitted, there may be additional instructions
+    // such as dismissing the modal popup.
+    if (!empty($form_state['ajax_commands'])) {
+      $output = $form_state['ajax_commands'];
+    }
+
+    // Return the ajax instructions to the browser via ajax_render().
+    print ajax_render($output);
+    drupal_exit();
+  }
+  else {
+    return drupal_get_form('roomify_property_wizard_form');
+  }
+}
+
+/**
+ * Roomify Add Property Wizard form main callback.
+ */
+function roomify_property_wizard_form($form, &$form_state) {
+  // Initialize a description of the steps for the wizard.
+  if (empty($form_state['step'])) {
+    $form_state['step'] = 1;
+
+    // This array contains the function to be called at each step to get the
+    // relevant form elements. It will also store state information for each
+    // step.
+    $form_state['step_information'] = _roomify_property_wizard_steps();
+  }
+  $step = &$form_state['step'];
+  drupal_set_title(t('Add Property: Step @step', array('@step' => $step)));
+
+  // Call the function named in $form_state['step_information'] to get the
+  // form elements to display for this step.
+  $form = $form_state['step_information'][$step]['form']($form, $form_state);
+
+  // Show the Next button only if there are more steps defined.
+  if ($step < count($form_state['step_information'])) {
+    // The Next button should be included on every step.
+    $form['next'] = array(
+      '#type' => 'submit',
+      '#value' => t('Next'),
+      '#name' => 'next',
+      '#submit' => array('roomify_property_wizard_form_next_submit'),
+    );
+  }
+  else {
+    // Just in case there are no more steps, we use the default submit handler
+    // of the form wizard. Call this button Finish, Submit, or whatever you
+    // want to show. When this button is clicked, the
+    // form_example_wizard_submit handler will be called.
+    $form['finish'] = array(
+      '#type' => 'submit',
+      '#value' => t('create property and add details'),
+    );
+  }
+
+  // Include each validation function defined for the different steps.
+  if (function_exists($form_state['step_information'][$step]['form'] . '_validate')) {
+    $form['next']['#validate'] = array($form_state['step_information'][$step]['form'] . '_validate');
+  }
+
+  return $form;
+}
+
+/**
+ * Submit handler for the "previous" button.
+ */
+function roomify_property_wizard_form_previous_submit($form, &$form_state) {
+  $current_step = &$form_state['step'];
+  $form_state['step_information'][$current_step]['stored_values'] = $form_state['values'];
+  if ($current_step > 1) {
+    $current_step--;
+    $form_state['values'] = $form_state['step_information'][$current_step]['stored_values'];
+  }
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Submit handler for the 'next' button.
+ */
+function roomify_property_wizard_form_next_submit($form, &$form_state) {
+  $current_step = &$form_state['step'];
+  $form_state['step_information'][$current_step]['stored_values'] = $form_state['values'];
+
+  if ($current_step < count($form_state['step_information'])) {
+    $current_step++;
+    if (!empty($form_state['step_information'][$current_step]['stored_values'])) {
+      $form_state['values'] = $form_state['step_information'][$current_step]['stored_values'];
+    }
+    else {
+      $form_state['values'] = array();
+    }
+    // Force rebuild with next step.
+    $form_state['rebuild'] = TRUE;
+    return;
+  }
+}
+
+/**
+ * Returns form elements for the 'property name' page of the wizard.
+ */
+function roomify_property_wizard_form_property_name($form, &$form_state) {
+  $form = array();
+
+  $form['property_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Property Name'),
+    '#default_value' => !empty($form_state['values']['property_name']) ? $form_state['values']['property_name'] : '',
+    '#required' => TRUE,
+  );
+
+  // Get available types.
+  $types = roomify_property_get_types();
+  $options = array();
+  foreach ($types as $type) {
+    if ($type->type == 'casa_property') {
+      $options[$type->type] = t('Single-Unit (entire home)');
+    }
+    elseif ($type->type == 'locanda_property') {
+      $options[$type->type] = t('Multi-Unit (multiple rooms / types within a property)');
+    }
+    else {
+      $options[$type->type] = $type->label;
+    }
+  }
+
+  $form['property_type'] = array(
+    '#type' => 'radios',
+    '#options' => $options,
+    '#required' => TRUE,
+  );
+
+  // Hide property type radios if there's only one choice.
+  if (count($options) == 1) {
+    $form['property_type']['#access'] = FALSE;
+    $form['property_type']['#default_value'] = current(array_keys($options));
+  }
+
+  return $form;
+}
+
+/**
+ * Returns form elements for the 'type info' page of the wizard.
+ */
+function roomify_property_wizard_form_type_info($form, &$form_state) {
+  $form = array();
+  $form['property_title'] = array(
+    '#markup' => '<h2>' . $form_state['step_information'][1]['stored_values']['property_name'] . '</h2>'
+  );
+
+  // Change the form elements we provide based on the property type.
+  switch ($form_state['step_information'][1]['stored_values']['property_type']) {
+    case 'casa_property':
+      $form['container'] = array(
+        '#type' => 'container',
+        '#attributes' => array(
+          'class' => array('container-inline'),
+        ),
+      );
+      $form['container']['max_occupants'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Max Occupants'),
+        '#size' => 2,
+        '#required' => TRUE,
+        '#default_value' => !empty($form_state['values']['max_occupants']) ? $form_state['values']['max_occupants'] : '',
+        '#element_validate' => array('element_validate_integer_positive'),
+      );
+      $form['container']['default_price'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Default Price Per Night'),
+        '#size' => 4,
+        '#required' => TRUE,
+        '#default_value' => !empty($form_state['values']['default_price']) ? $form_state['values']['default_price'] : '',
+        '#element_validate' => array('element_validate_number'),
+      );
+      break;
+    case 'locanda_property':
+      // Because we have many fields with the same values, we have to set
+      // #tree to be able to access them.
+      $form['#tree'] = TRUE;
+      $form['types_fieldset'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Define Room Types'),
+        '#attributes' => array(
+          'class' => array('container-inline'),
+        ),
+        '#prefix' => '<div id="types-fieldset-wrapper">',
+        '#suffix' => '</div>',
+      );
+
+      // Build the fieldset with the proper number of types. We'll use
+      // $form_state['num_types'] to determine the number of fields to build.
+      if (empty($form_state['num_types'])) {
+        $form_state['num_types'] = 1;
+      }
+      for ($i = 0; $i < $form_state['num_types']; $i++) {
+        $form['types_fieldset']['name'][$i] = array(
+          '#type' => 'textfield',
+          '#size' => '20',
+          '#title' => t('Type Name'),
+          '#required' => TRUE,
+        );
+        $form['types_fieldset']['rooms'][$i] = array(
+          '#type' => 'textfield',
+          '#title' => t('Number of Rooms'),
+          '#size' => 2,
+          '#required' => TRUE,
+          '#element_validate' => array('element_validate_integer_positive'),
+        );
+        $form['types_fieldset']['default_price'][$i] = array(
+          '#type' => 'textfield',
+          '#title' => t('Default Price Per Night'),
+          '#size' => 4,
+          '#required' => TRUE,
+          '#element_validate' => array('element_validate_number'),
+        );
+        $form['types_fieldset']['max_occupancy'][$i] = array(
+          '#type' => 'textfield',
+          '#title' => t('Max Occupancy'),
+          '#size' => 2,
+          '#required' => TRUE,
+          '#element_validate' => array('element_validate_integer_positive'),
+        );
+      }
+      $form['types_fieldset']['add_type'] = array(
+        '#type' => 'submit',
+        '#value' => t('add another type'),
+        '#submit' => array('roomify_property_wizard_form_add_one'),
+      );
+      if ($form_state['num_types'] > 1) {
+        $form['types_fieldset']['remove_name'] = array(
+          '#type' => 'submit',
+          '#value' => t('remove a type'),
+          '#submit' => array('roomify_property_wizard_form_remove_one'),
+        );
+      }
+
+      break;
+  }
+
+  return $form;
+}
+
+/**
+ * Add another type form line.
+ */
+function roomify_property_wizard_form_add_one($form, &$form_state) {
+  $current_step = 2;
+  $form_state['step_information'][$current_step]['stored_values'] = $form_state['values'];
+
+  if (!empty($form_state['step_information'][$current_step]['stored_values'])) {
+    $form_state['values'] = $form_state['step_information'][$current_step]['stored_values'];
+  }
+  else {
+    $form_state['values'] = array();
+  }
+
+  $form_state['num_types']++;
+  // Force rebuild with next step.
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Remove a type form line.
+ */
+function roomify_property_wizard_form_remove_one($form, &$form_state) {
+  $current_step = 2;
+  $form_state['step_information'][$current_step]['stored_values'] = $form_state['values'];
+
+  if (!empty($form_state['step_information'][$current_step]['stored_values'])) {
+    $form_state['values'] = $form_state['step_information'][$current_step]['stored_values'];
+  }
+  else {
+    $form_state['values'] = array();
+  }
+
+  $form_state['num_types']--;
+  // Force rebuild with next step.
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Roomify add a Property wizard form submit handler.
+ */
+function roomify_property_wizard_form_submit($form, &$form_state) {
+  $current_step = &$form_state['step'];
+  $form_state['step_information'][$current_step]['stored_values'] = $form_state['values'];
+
+  // In this case we've completed the final page of the wizard, so process the
+  // submitted information.
+  drupal_set_message(t('This information was collected by this wizard:'));
+  foreach ($form_state['step_information'] as $index => $value) {
+    // Remove FAPI fields included in the values (form_token, form_id and
+    // form_build_id. This is not required, you may access the values using
+    // $value['stored_values'] but I'm removing them to make a more clear
+    // representation of the collected information as the complete array will
+    // be passed through drupal_set_message().
+    unset($value['stored_values']['form_id']);
+    unset($value['stored_values']['form_build_id']);
+    unset($value['stored_values']['form_token']);
+
+    // Now show all the values.
+    drupal_set_message(t('Step @num collected the following values: <pre>@result</pre>',
+      array(
+        '@num' => $index,
+        '@result' => print_r($value['stored_values'], TRUE),
+      )
+    ));
+  }
+}
+
+/**
+ * Returns the list of steps and their associated forms.
+ *
+ * @return array
+ *   List of steps and their forms.
+ */
+function _roomify_property_wizard_steps() {
+  return array(
+    1 => array(
+      'form' => 'roomify_property_wizard_form_property_name',
+    ),
+    2 => array(
+      'form' => 'roomify_property_wizard_form_type_info',
+    ),
+  );
 }

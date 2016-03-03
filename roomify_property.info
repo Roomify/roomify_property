@@ -4,6 +4,8 @@ core = 7.x
 
 package = Roomify
 
+dependencies[] = ctools
+
 files[] = roomify_property.admin.inc
 files[] = roomify_property_type.admin.inc
 files[] = views/roomify_property.views.inc
