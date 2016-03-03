@@ -684,6 +684,9 @@ function roomify_property_wizard_form_next_submit($form, &$form_state) {
  */
 function roomify_property_wizard_form_property_name($form, &$form_state) {
   $form = array();
+  $form['#attached']['js'] = array(
+    drupal_get_path('module', 'roomify_property') . '/js/property_wizard.js',
+  );
   $form['#attached']['css'] = array(
     drupal_get_path('module', 'roomify_property') . '/css/property_wizard.css',
     drupal_get_path('module', 'roomify_property') . '/css/property_name.css',
@@ -731,6 +734,9 @@ function roomify_property_wizard_form_property_name($form, &$form_state) {
  */
 function roomify_property_wizard_form_type_info($form, &$form_state) {
   $form = array();
+  $form['#attached']['js'] = array(
+    drupal_get_path('module', 'roomify_property') . '/js/property_wizard.js',
+  );
   $form['#attached']['css'] = array(
     drupal_get_path('module', 'roomify_property') . '/css/property_wizard.css',
   );
