@@ -521,7 +521,7 @@ function roomify_property_entity_insert($entity, $type) {
         $unit->default_state = 1;
         $unit->uid = $user->uid;
         $unit->save();
-      }      
+      }
     }
   }
 }
@@ -979,6 +979,7 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
       }
       $type_ids = array();
       for ($i = 0; $i < count($type_values); $i++) {
+        // Create type.
         $type = new BatType();
         $type->name = $type_values[$i]['name'];
         $type->type = 'room';
@@ -987,9 +988,20 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
         $type->field_st_max_capacity[LANGUAGE_NONE][0]['value'] = $type_values[$i]['max_occupancy'];
         $type->field_st_default_price[LANGUAGE_NONE][0]['amount'] = $type_values[$i]['default_price'] * 100;
         $type->field_st_default_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
-        $type->field_st_bedrooms[LANGUAGE_NONE][0]['value'] = $type_values[$i]['rooms'];
         $type->save();
         $type_ids[] = $type->type_id;
+
+        // Create units for this type.
+        $num_units = $type_values[$i]['rooms'];
+        for ($i = 0; $i < $num_units; $i++) {
+          $unit = bat_unit_create(array('type' => 'default'));
+          $unit->name = $type->name . ' ' . $i;
+          $unit->created = !empty($unit->date) ? strtotime($unit->date) : REQUEST_TIME;
+          $unit->type_id = $type->type_id;
+          $unit->default_state = 1;
+          $unit->uid = $user->uid;
+          $unit->save();
+        }
       }
 
       foreach ($type_ids as $type_id) {
