@@ -992,10 +992,9 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
         $type_ids[] = $type->type_id;
 
         // Create units for this type.
-        $num_units = $type_values[$i]['rooms'];
-        for ($i = 0; $i < $num_units; $i++) {
+        for ($j = 0; $j < $type_values[$i]['rooms']; $j++) {
           $unit = bat_unit_create(array('type' => 'default'));
-          $unit->name = $type->name . ' ' . $i;
+          $unit->name = $type->name . ' ' . ($j + 1);
           $unit->created = !empty($unit->date) ? strtotime($unit->date) : REQUEST_TIME;
           $unit->type_id = $type->type_id;
           $unit->default_state = 1;
