@@ -4,6 +4,7 @@ core = 7.x
 
 package = Roomify
 
+dependencies[] = commerce
 dependencies[] = ctools
 
 files[] = roomify_property.admin.inc

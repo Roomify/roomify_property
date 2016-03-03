@@ -859,25 +859,34 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
 
   // In this case we've completed the final page of the wizard, so process the
   // submitted information.
-  drupal_set_message(t('This information was collected by this wizard:'));
-  foreach ($form_state['step_information'] as $index => $value) {
-    // Remove FAPI fields included in the values (form_token, form_id and
-    // form_build_id. This is not required, you may access the values using
-    // $value['stored_values'] but I'm removing them to make a more clear
-    // representation of the collected information as the complete array will
-    // be passed through drupal_set_message().
-    unset($value['stored_values']['form_id']);
-    unset($value['stored_values']['form_build_id']);
-    unset($value['stored_values']['form_token']);
+  $property_name = $form_state['step_information'][1]['stored_values']['property_name'];
+  $property_type = $form_state['step_information'][1]['stored_values']['property_type'];
 
-    // Now show all the values.
-    drupal_set_message(t('Step @num collected the following values: <pre>@result</pre>',
-      array(
-        '@num' => $index,
-        '@result' => print_r($value['stored_values'], TRUE),
-      )
-    ));
+  switch ($property_type) {
+    case 'casa_property':
+      $type = new BatType();
+      $type->name = 'Home';
+      $type->type = 'home';
+      $type->field_st_max_capacity[LANGUAGE_NONE][0]['value'] = $form_state['step_information'][2]['stored_values']['max_occupants'];
+      $type->field_st_default_price[LANGUAGE_NONE][0]['amount'] = $form_state['step_information'][2]['stored_values']['default_price'] * 100;
+      $type->field_st_default_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
+      $type->save();
+
+      $property = new RoomifyProperty();
+      $property->name = $property_name;
+      $property->type = $property_type;
+      $property->property_bat_type_reference[LANGUAGE_NONE][0]['target_id'] = $type->type_id;
+      $property->save();
+
+      break;
+    case 'locanda_property':
+      break;
   }
+
+  // Close the modal and redirect to the property.
+  ctools_add_js('ajax-responder');
+  $form_state['ajax_commands'][] = ctools_modal_command_dismiss();
+  $form_state['ajax_commands'][] = ctools_ajax_command_redirect('admin/bat/config/property/manage/' . $property->property_id);
 }
 
 /**
