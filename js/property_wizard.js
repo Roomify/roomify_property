@@ -6,10 +6,9 @@
 Drupal.behaviors.propertyWizard = {
   attach: function(context) {
 
-    // Auto modal sizing stuff.
-    Drupal.CTools.Modal.currentSettings.modalSize.width = '100px';
-    Drupal.CTools.Modal.currentSettings.modalSize.height = '100px';
-
+    /**
+     * Auto modal sizing stuff.
+     */
     var winHeight = $(window).height();
     var winWidth = $(window).width();
 
@@ -32,8 +31,13 @@ Drupal.behaviors.propertyWizard = {
     $('#modalContent').css({'width': 'auto'});
     $('div.ctools-modal-content .modal-content', context).css("overflow", "hidden");
 
+    // Trigger a resize to re-center the modal.
+    $(window).trigger('resize');
 
-    // Messing aboot wi' the bootons.
+
+    /**
+     * Messing aboot wi' the bootons.
+     */
 
     // Disable submit buttons.
     $('input[name=next]').prop('disabled', true);
