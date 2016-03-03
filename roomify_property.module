@@ -777,13 +777,10 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
       // Because we have many fields with the same values, we have to set
       // #tree to be able to access them.
       $form['#tree'] = TRUE;
-      $form['types_fieldset'] = array(
-        '#type' => 'fieldset',
+      $form['types_container'] = array(
+        '#type' => 'container',
         '#title' => t('Define Room Types'),
-        '#attributes' => array(
-          'class' => array('container-inline'),
-        ),
-        '#prefix' => '<div id="types-fieldset-wrapper">',
+        '#prefix' => '<div id="types-container-wrapper">',
         '#suffix' => '</div>',
       );
 
@@ -793,37 +790,46 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
         $form_state['num_types'] = 1;
       }
       for ($i = 0; $i < $form_state['num_types']; $i++) {
-        $form['types_fieldset']['name'][$i] = array(
+        $form['types_container'][$i] = array(
+          '#type' => 'container',
+          '#attributes' => array(
+            'class' => array('container-inline'),
+          ),
+          '#prefix' => '<div class="type-container" id="type-container-' . $i . '">',
+          '#suffix' => '</div>',
+        );
+
+        $form['types_container'][$i]['name'] = array(
           '#type' => 'textfield',
           '#size' => '20',
           '#title' => t('Type Name'),
         );
-        $form['types_fieldset']['rooms'][$i] = array(
+        $form['types_container'][$i]['rooms'] = array(
           '#type' => 'textfield',
           '#title' => t('Number of Rooms'),
           '#size' => 2,
           '#element_validate' => array('element_validate_integer_positive'),
         );
-        $form['types_fieldset']['default_price'][$i] = array(
+        $form['types_container'][$i]['default_price'] = array(
           '#type' => 'textfield',
           '#title' => t('Default Price Per Night'),
           '#size' => 4,
           '#element_validate' => array('element_validate_number'),
         );
-        $form['types_fieldset']['max_occupancy'][$i] = array(
+        $form['types_container'][$i]['max_occupancy'] = array(
           '#type' => 'textfield',
           '#title' => t('Max Occupancy'),
           '#size' => 2,
           '#element_validate' => array('element_validate_integer_positive'),
         );
       }
-      $form['types_fieldset']['add_type'] = array(
+      $form['types_container']['add_type'] = array(
         '#type' => 'submit',
         '#value' => t('add another type'),
         '#submit' => array('roomify_property_wizard_form_add_one'),
       );
       if ($form_state['num_types'] > 1) {
-        $form['types_fieldset']['remove_name'] = array(
+        $form['types_container']['remove_name'] = array(
           '#type' => 'submit',
           '#value' => t('remove a type'),
           '#submit' => array('roomify_property_wizard_form_remove_one'),
@@ -842,7 +848,7 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
 function roomify_property_wizard_form_validate($form, &$form_state) {
   // Ensure that all values are set for each type.
   $type_fields = array('name', 'rooms', 'default_price', 'max_occupancy');
-  $types = $form_state['input']['types_fieldset'];
+  $types = $form_state['input']['types_container'];
   for ($i = 0; $i < count($types['name']); $i++) {
     $check_fields = FALSE;
     foreach ($type_fields as $field) {
@@ -855,7 +861,7 @@ function roomify_property_wizard_form_validate($form, &$form_state) {
     if ($check_fields) {
       foreach ($type_fields as $field) {
         if (!strlen($types[$field][$i])) {
-          form_set_error('types_fieldset][' . $field . '][' . $i, t('Please enter a value for all fields'));
+          form_set_error('types_container][' . $field . '][' . $i, t('Please enter a value for all fields'));
         }
       }
     }
@@ -931,7 +937,7 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
 
       break;
     case 'locanda_property':
-      $type_values = $form_state['step_information'][2]['stored_values']['types_fieldset'];
+      $type_values = $form_state['step_information'][2]['stored_values']['types_container'];
       $type_ids = array();
       for ($i = 0; $i < count($type_values['name']); $i++) {
         $type = new BatType();
