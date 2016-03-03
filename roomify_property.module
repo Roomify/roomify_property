@@ -616,6 +616,21 @@ function roomify_property_wizard_form($form, &$form_state) {
   // form elements to display for this step.
   $form = $form_state['step_information'][$step]['form']($form, $form_state);
 
+  // Show the 'previous' button if appropriate. Note that #submit is set to
+  // a special submit handler, and that we use #limit_validation_errors to
+  // skip all complaints about validation when using the back button. The
+  // values entered will be discarded, but they will not be validated, which
+  // would be annoying in a "back" button.
+  if ($step > 1) {
+    $form['prev'] = array(
+      '#type' => 'submit',
+      '#value' => t('Previous'),
+      '#name' => 'prev',
+      '#submit' => array('roomify_property_wizard_form_previous_submit'),
+      '#limit_validation_errors' => array(),
+    );
+  }
+
   // Show the Next button only if there are more steps defined.
   if ($step < count($form_state['step_information'])) {
     // The Next button should be included on every step.
