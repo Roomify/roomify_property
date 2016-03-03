@@ -769,27 +769,23 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
           '#type' => 'textfield',
           '#size' => '20',
           '#title' => t('Type Name'),
-          '#required' => TRUE,
         );
         $form['types_fieldset']['rooms'][$i] = array(
           '#type' => 'textfield',
           '#title' => t('Number of Rooms'),
           '#size' => 2,
-          '#required' => TRUE,
           '#element_validate' => array('element_validate_integer_positive'),
         );
         $form['types_fieldset']['default_price'][$i] = array(
           '#type' => 'textfield',
           '#title' => t('Default Price Per Night'),
           '#size' => 4,
-          '#required' => TRUE,
           '#element_validate' => array('element_validate_number'),
         );
         $form['types_fieldset']['max_occupancy'][$i] = array(
           '#type' => 'textfield',
           '#title' => t('Max Occupancy'),
           '#size' => 2,
-          '#required' => TRUE,
           '#element_validate' => array('element_validate_integer_positive'),
         );
       }
@@ -810,6 +806,32 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
   }
 
   return $form;
+}
+
+/**
+ * Validation handler for type info form step
+ */
+function roomify_property_wizard_form_validate($form, &$form_state) {
+  // Ensure that all values are set for each type.
+  $type_fields = array('name', 'rooms', 'default_price', 'max_occupancy');
+  $types = $form_state['input']['types_fieldset'];
+  for ($i = 0; $i < count($types['name']); $i++) {
+    $check_fields = FALSE;
+    foreach ($type_fields as $field) {
+      if (strlen($types[$field][$i])) {
+        $check_fields = TRUE;
+      }
+    }
+
+    // At least one field was filled in for this type, ensure all fields were filled in.
+    if ($check_fields) {
+      foreach ($type_fields as $field) {
+        if (!strlen($types[$field][$i])) {
+          form_set_error('types_fieldset][' . $field . '][' . $i, t('Please enter a value for all fields'));
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -862,6 +884,10 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
   $property_name = $form_state['step_information'][1]['stored_values']['property_name'];
   $property_type = $form_state['step_information'][1]['stored_values']['property_type'];
 
+  $property = new RoomifyProperty();
+  $property->name = $property_name;
+  $property->type = $property_type;
+
   switch ($property_type) {
     case 'casa_property':
       $type = new BatType();
@@ -872,14 +898,30 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
       $type->field_st_default_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
       $type->save();
 
-      $property = new RoomifyProperty();
-      $property->name = $property_name;
-      $property->type = $property_type;
       $property->property_bat_type_reference[LANGUAGE_NONE][0]['target_id'] = $type->type_id;
       $property->save();
 
       break;
     case 'locanda_property':
+      $type_values = $form_state['step_information'][2]['stored_values']['types_fieldset'];
+      $type_ids = array();
+      for ($i = 0; $i < count($type_values['name']); $i++) {
+        $type = new BatType();
+        $type->name = $type_values['name'][$i];
+        $type->type = 'room';
+        $type->field_st_max_capacity[LANGUAGE_NONE][0]['value'] = $type_values['max_occupancy'][$i];
+        $type->field_st_default_price[LANGUAGE_NONE][0]['amount'] = $type_values['default_price'][$i] * 100;
+        $type->field_st_default_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
+        $type->field_st_bedrooms[LANGUAGE_NONE][0]['value'] = $type_values['rooms'][$i];
+        $type->save();
+        $type_ids[] = $type->type_id;
+      }
+
+      foreach ($type_ids as $type_id) {
+        $property->property_bat_type_reference[LANGUAGE_NONE][]['target_id'] = $type_id;
+      }
+      $property->save();
+
       break;
   }
 
