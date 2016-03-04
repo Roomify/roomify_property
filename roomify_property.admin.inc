@@ -23,6 +23,17 @@ class RoomifyPropertyUIController extends EntityDefaultUIController {
     $items[$this->path . '/add']['access callback'] = 'roomify_property_add_access';
     unset($items[$this->path . '/add']['title callback']);
 
+    // Add property type specific types menu item.
+    $items[$this->path . '/manage/%roomify_property/types'] = array(
+      'title' => 'Manage Rooms',
+      'page callback' => 'roomify_property_types_wrapper',
+      'page arguments' => array(5),
+      'access callback' => 'roomify_property_add_access',
+      'file' => 'roomify_property.admin.inc',
+      'file path' => drupal_get_path('module', $this->entityInfo['module']),
+      'type' => MENU_LOCAL_TASK,
+    );
+
     // Add property type specific calendar menu item.
     $items[$this->path . '/manage/%roomify_property/calendar/availability'] = array(
       'title' => 'Manage availability',
@@ -116,6 +127,13 @@ function roomify_property_calendar_wrapper($property, $event_type) {
   $function = 'roomify_' . $property_type . '_event_ui_calendar_page';
 
   return(call_user_func($function, $property->property_id, $event_type));
+}
+
+/**
+ * Show types view on property tab.
+ */
+function roomify_property_types_wrapper($property) {
+  return(views_embed_view('property_types', 'block_1', $property->property_id));
 }
 
 /**
