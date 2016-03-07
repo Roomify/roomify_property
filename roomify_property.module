@@ -17,6 +17,13 @@ function roomify_property_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  $items['admin/bat/config/type/wizard/%roomify_property/%ctools_js'] = array(
+    'page callback' => 'roomify_type_wizard',
+    'page arguments' => array(5, 6),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
 }
 
@@ -559,7 +566,9 @@ function roomify_property_ids($bundle = '') {
  * We do this to prevent the modal "flashing" when first loading.
  */
 function roomify_property_views_pre_render(&$view) {
-  if ($view->name == 'properties') {
+  if ($view->name == 'properties' || $view->name == 'property_types') {
+    ctools_include('modal');
+    ctools_modal_add_js();
     drupal_add_css(drupal_get_path('module', 'roomify_property') . '/css/property_wizard.css');
     drupal_add_js(array(
       'property-wizard-modal-style' => array(
@@ -570,6 +579,13 @@ function roomify_property_views_pre_render(&$view) {
         ),
       ),
     ), 'setting');
+
+    // Hide "Add Types" button if this is a Casa.
+    if ($view->name == 'property_types') {
+      if (count($view->result) == 1 && $view->result[0]->bat_types_type == 'home') {
+        unset($view->header['area']);
+      }
+    }
   }
 }
 
@@ -947,11 +963,15 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
   // submitted information.
   $property_name = $form_state['step_information'][1]['stored_values']['property_name'];
   $property_type = $form_state['step_information'][1]['stored_values']['property_type'];
-
-  $property = new RoomifyProperty();
-  $property->name = $property_name;
-  $property->type = $property_type;
-  $property->uid = $user->uid;
+  if ($property_id = $form_state['step_information'][1]['stored_values']['property_id']) {
+    $property = roomify_property_load($property_id);
+  }
+  else {
+    $property = new RoomifyProperty();
+    $property->name = $property_name;
+    $property->type = $property_type;
+    $property->uid = $user->uid;
+  }
 
   switch ($property_type) {
     case 'casa_property':
@@ -1018,7 +1038,13 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
   // Redirect user to property page.
   $delay = 0;
   $options = array('query' => array('destination' => 'user'));
-  $form_state['ajax_commands'][] = ctools_ajax_command_redirect('admin/bat/config/property/manage/' . $property->property_id, $delay, $options);
+  if (!empty($form_state['#redirect'])) {
+    $path = $form_state['#redirect'];
+  }
+  else {
+    $path = 'admin/bat/config/property/manage/' . $property->property_id;
+  }
+  $form_state['ajax_commands'][] = ctools_ajax_command_redirect($path, $delay, $options);
 }
 
 /**
@@ -1050,4 +1076,63 @@ function _roomify_property_wizard_close_button() {
                  '<img height="25px" src="' . $image_uri . '" alt="' . $close_text . '" title="' . $close_text . '" />' .
                  '</a>',
    );
+}
+
+/**
+ * Callback for Add type wizard.
+ */
+function roomify_type_wizard($property, $ajax) {
+  if ($ajax) {
+    ctools_include('ajax');
+    ctools_include('modal');
+
+    $form_state = array(
+      'ajax' => TRUE,
+      'title' => t('Add New Type'),
+    );
+
+    $step = 2;
+    $form_state['step'] = $step;
+    $form_state['step_information'][1]['stored_values']['property_type'] = 'locanda_property';
+    $form_state['step_information'][1]['stored_values']['property_id'] = $property->property_id;
+    $form_state['step_information'][1]['stored_values']['property_name'] = $property->name;
+    $form_state['#redirect'] = 'admin/bat/config/property/manage/' . $property->property_id . '/types';
+
+    // Use ctools to generate ajax instructions for the browser to create
+    // a form in a modal popup.
+    $output = ctools_modal_form_wrapper('roomify_type_wizard_form', $form_state, $property->property_id);
+
+    // If the form has been submitted, there may be additional instructions
+    // such as dismissing the modal popup.
+    if (!empty($form_state['ajax_commands'])) {
+      $output = $form_state['ajax_commands'];
+    }
+
+    // Return the ajax instructions to the browser via ajax_render().
+    print ajax_render($output);
+    drupal_exit();
+  }
+  else {
+    return drupal_get_form('roomify_type_wizard_form', $property->property_id);
+  }
+}
+
+/**
+ * Roomify Add Type Wizard form main callback.
+ */
+function roomify_type_wizard_form($form, &$form_state, $property_id) {
+  drupal_set_title(t('Add Types'));
+
+  // Call the function named in $form_state['step_information'] to get the
+  // form elements to display for this step.
+  $form = roomify_property_wizard_form_type_info($form, $form_state);
+
+  $form['#submit'] = array('roomify_property_wizard_form_submit');
+  $form['finish'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add type'),
+    '#suffix' => '<div class="clearfix"> </div>',
+  );
+
+  return $form;
 }
