@@ -1011,10 +1011,14 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
       break;
   }
 
-  // Close the modal and redirect to the property.
+  // Close the modal.
   ctools_add_js('ajax-responder');
   $form_state['ajax_commands'][] = ctools_modal_command_dismiss();
-  $form_state['ajax_commands'][] = ctools_ajax_command_redirect('admin/bat/config/property/manage/' . $property->property_id);
+
+  // Redirect user to property page.
+  $delay = 0;
+  $options = array('query' => array('destination' => 'user'));
+  $form_state['ajax_commands'][] = ctools_ajax_command_redirect('admin/bat/config/property/manage/' . $property->property_id, $delay, $options);
 }
 
 /**
