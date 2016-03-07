@@ -79,7 +79,7 @@ function property_bat_facets_availability($form, &$form_state, $elements) {
 
   $form['container']['arrival'] = array(
     '#prefix' => '<div class="form-wrapper bat-date-range"><div class="start-date" id="' . $start_date_id . '">',
-    '#suffix' => '</div></div>',
+    '#suffix' => '</div>',
     '#type' => 'date_popup',
     '#description' => '',
     '#date_format' => variable_get('bat_date_format', 'Y-m-d'),
@@ -91,6 +91,8 @@ function property_bat_facets_availability($form, &$form_state, $elements) {
   );
 
   $form['container']['departure'] = array(
+    '#prefix' => '<div class="end-date" id="' . $end_date_id . '">',
+    '#suffix' => '</div></div>',
     '#type' => 'date_popup',
     '#description' => '',
     '#date_format' => variable_get('bat_date_format', 'Y-m-d'),
@@ -126,7 +128,9 @@ function property_bat_facets_availability($form, &$form_state, $elements) {
 
   $form['container']['submit'] = array(
     '#type' => 'submit',
-    '#value' => 'Search',
+    '#prefix' => '<div class="search-submit">',
+    '#suffix' => '</div>',
+    '#value' => t('Search'),
   );
 
   return $form;
