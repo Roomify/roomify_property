@@ -71,10 +71,11 @@ function property_bat_facets_availability($form, &$form_state, $elements) {
 
   // Specify the default datepicker parameters (see date_popup_element_info())
   $datepicker_options = array(
-    // Limit bookings to X days in advance, depending on the
-    // chosen configuration in your BAT installation, defaults
-    // to the current day.
-    'minDate' => '+' . variable_get('bat_event_start_date', 0) . 'd',
+    'minDate' => '+1d',
+    'maxDate' => '+1y',
+    'numberOfMonths' => 1,
+    'changeMonth' => FALSE,
+    'changeYear' => FALSE,
   );
 
   $form['container']['arrival'] = array(
@@ -123,6 +124,7 @@ function property_bat_facets_availability($form, &$form_state, $elements) {
           'type' => 'setting',
         ),
       ),
+      'css' => array(drupal_get_path('module', 'roomify_listing_availability_search_block') . '/skin/single-melon.datepicker.css'),
     ),
   );
 
