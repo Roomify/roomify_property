@@ -1130,7 +1130,7 @@ function roomify_type_wizard_form($form, &$form_state, $property_id) {
   $form['#submit'] = array('roomify_property_wizard_form_submit');
   $form['finish'] = array(
     '#type' => 'submit',
-    '#value' => t('Add type'),
+    '#value' => t('Add types'),
     '#suffix' => '<div class="clearfix"> </div>',
   );
 
