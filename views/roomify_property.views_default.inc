@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Implements hook_views_default_views().
  */
@@ -12,7 +11,7 @@ function roomify_property_views_default_views() {
   $view->description = '';
   $view->tag = 'default';
   $view->base_table = 'bat_types';
-  $view->human_name = 'Property Types';
+  $view->human_name = 'Types by Property';
   $view->core = 7;
   $view->api_version = '3.0';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
@@ -21,7 +20,7 @@ function roomify_property_views_default_views() {
   $handler = $view->new_display('default', 'Master', 'default');
   $handler->display->display_options['use_more_always'] = FALSE;
   $handler->display->display_options['access']['type'] = 'perm';
-  $handler->display->display_options['access']['perm'] = 'delete own bat_type entities';
+  $handler->display->display_options['access']['perm'] = 'update own roomify_property entities';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['exposed_form']['type'] = 'basic';
