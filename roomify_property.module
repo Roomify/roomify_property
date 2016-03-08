@@ -1136,3 +1136,22 @@ function roomify_type_wizard_form($form, &$form_state, $property_id) {
 
   return $form;
 }
+
+/**
+ * Implements hook_entity_presave().
+ */
+function roomify_property_entity_presave($entity, $type) {
+  if ($type == 'roomify_property') {
+    $types_reference = field_get_items($type, $entity, 'property_bat_type_reference');
+
+    foreach ($types_reference as $reference) {
+      $type_referenced = bat_type_load($reference['target_id']);
+
+      // Sync Type author with Property author.
+      if ($type_referenced->uid != $entity->uid) {
+        $type_referenced->uid = $entity->uid;
+        $type_referenced->save();
+      }
+    }
+  }
+}
