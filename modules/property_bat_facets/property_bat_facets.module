@@ -185,9 +185,13 @@ function property_bat_facets_search_api_query_alter($query) {
 
           $event_type = $settings->settings['event_type'];
 
-          $state_store = new DrupalDBStore($event_type, DrupalDBStore::BAT_STATE);
+          $valid_states = $settings->settings['states'];
 
-          $valid_states = array(0) + $settings->settings['states'];
+          $valid_states_names = array();
+          foreach ($valid_states as $state_id) {
+            $state = bat_event_load_state($state_id);
+            $valid_states_names[] = $state['machine_name'];
+          }
 
           $valid_properties_ids = array();
 
@@ -200,19 +204,9 @@ function property_bat_facets_search_api_query_alter($query) {
             if (!empty($types)) {
               foreach ($types as $type_id) {
                 $type = bat_type_load($type_id['target_id']);
-                $drupal_units = bat_unit_load_multiple(FALSE, array('type_id' => $type->type_id));
-                $bat_units = array();
-                foreach ($drupal_units as $unit_id => $unit) {
-                  $bat_units[] = new Unit($unit_id, $unit->getEventDefaultValue($event_type));
-                }
-
-                if (count($bat_units)) {
-                  $calendar = new Calendar($bat_units, $state_store);
-                  $response = $calendar->getMatchingUnits($start_date, $end_date, $valid_states, array());
-                  if (count($response->getIncluded())) {
-                    // Include the property in the search.
-                    $valid_properties_ids[] = $property->property_id;
-                  }
+                if (bat_event_get_matching_units($start_date, $end_date, $valid_states_names, $type->type_id, $event_type) !== FALSE) {
+                  // Include the property in the search.
+                  $valid_properties_ids[] = $property->property_id;
                 }
               }
             }
