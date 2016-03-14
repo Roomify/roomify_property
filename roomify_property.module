@@ -75,7 +75,7 @@ function roomify_property_entity_info() {
     'metadata controller class' => 'RoomifyPropertyMetadataController',
     'translation' => array(
       'entity_translation' => array(
-        'base path' => 'admin/bat/config/property/%roomify_property',
+        'base path' => 'admin/bat/config/property/manage/%roomify_property',
         'default settings' => array(
           'default_language' => LANGUAGE_NONE,
           'hide_language_selector' => FALSE,
