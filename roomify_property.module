@@ -76,6 +76,7 @@ function roomify_property_entity_info() {
     'translation' => array(
       'entity_translation' => array(
         'base path' => 'admin/bat/config/property/manage/%roomify_property',
+        'path wildcard' => '%roomify_property',
         'path schemes' => array(
           'default' => array(),
         ),
