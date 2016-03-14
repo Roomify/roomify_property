@@ -561,30 +561,12 @@ function roomify_property_ids($bundle = '') {
 
 /**
  * Implements hook_views_pre_render().
- *
- * Add our custom CSS for the modal when displaying properties view.
- * We do this to prevent the modal "flashing" when first loading.
  */
 function roomify_property_views_pre_render(&$view) {
-  if ($view->name == 'properties' || $view->name == 'property_types') {
-    ctools_include('modal');
-    ctools_modal_add_js();
-    drupal_add_css(drupal_get_path('module', 'roomify_property') . '/css/property_wizard.css');
-    drupal_add_js(array(
-      'property-wizard-modal-style' => array(
-        'modalSize' => array(
-          'type' => 'fixed',
-          'width' => 0,
-          'height' => 0,
-        ),
-      ),
-    ), 'setting');
-
-    // Hide "Add Types" button if this is a Casa.
-    if ($view->name == 'property_types') {
-      if (count($view->result) == 1 && $view->result[0]->bat_types_type == 'home') {
-        unset($view->header['area']);
-      }
+  // Hide "Add Types" button if this is a Casa.
+  if ($view->name == 'property_types') {
+    if (count($view->result) == 1 && $view->result[0]->bat_types_type == 'home') {
+      unset($view->header['area']);
     }
   }
 }
