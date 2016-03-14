@@ -7,35 +7,6 @@ Drupal.behaviors.propertyWizard = {
   attach: function(context) {
 
     /**
-     * Auto modal sizing stuff.
-     */
-    var winHeight = $(window).height();
-    var winWidth = $(window).width();
-
-    // Use the additional pixels for creating the width and height.
-    $('div.ctools-modal-content', context).css({
-      'min-width': Drupal.CTools.Modal.currentSettings.modalSize.width,
-      'min-height': Drupal.CTools.Modal.currentSettings.modalSize.height,
-      'width': 'auto',
-      'height': 'auto',
-      'max-height': (winHeight / 2) * 1.6 + 'px',
-      'max-width': (winWidth / 2) * 1.6 + 'px',
-      'overflow': 'none'
-    });
-
-    $('div#modal-content', context).css({
-      'height': 'auto',
-      'width': 'auto',
-    });
-
-    $('#modalContent').css({'width': 'auto'});
-    $('div.ctools-modal-content .modal-content', context).css("overflow", "hidden");
-
-    // Trigger a resize to re-center the modal.
-    $(window).trigger('resize');
-
-
-    /**
      * Messing aboot wi' the bootons.
      */
 

@@ -710,6 +710,7 @@ function roomify_property_wizard_form_property_name($form, &$form_state) {
   $form['close_button'] = _roomify_property_wizard_close_button();
 
   $form['#attached']['js'] = array(
+    drupal_get_path('module', 'roomify_dashboard') . '/js/roomify_dashboard_modal.js',
     drupal_get_path('module', 'roomify_property') . '/js/property_wizard.js',
   );
   $form['#attached']['css'] = array(
