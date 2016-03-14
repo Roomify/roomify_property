@@ -1,3 +1,6 @@
+#modalContent div.ctools-modal-content .modal-header .modal-title {
+  display: none;
+}
 #roomify-property-wizard-form .form-item-property-name {
   margin-left: 40px;
   vertical-align: middle;
