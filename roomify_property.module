@@ -1122,3 +1122,25 @@ function roomify_property_entity_presave($entity, $type) {
     }
   }
 }
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * FORM_ID = bat_type_edit_form
+ */
+function roomify_property_form_bat_type_edit_form_alter(&$form, &$form_state) {
+  if (isset($form['actions']['delete'])) {
+    $form['actions']['delete']['#submit'] = array_merge(array('roomify_property_form_bat_type_edit_form_delete_submit'), $form['actions']['delete']['#submit']);
+  }
+}
+
+/**
+ * Redirect user to the property edit page of the type that are deleting.
+ */
+function roomify_property_form_bat_type_edit_form_delete_submit($form, &$form_state) {
+  $type = $form_state['bat_type'];
+
+  if (isset($type->field_st_property_reference[LANGUAGE_NONE][0]['target_id'])) {
+    $_GET['destination'] = 'admin/bat/config/property/manage/' . $type->field_st_property_reference[LANGUAGE_NONE][0]['target_id'];
+  }
+}
