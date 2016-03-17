@@ -195,7 +195,7 @@ function property_bat_facets_search_api_query_alter($query) {
 
           $valid_properties_ids = array();
 
-          $properties = entity_load('roomify_property');
+          $properties = entity_load('roomify_property', FALSE, array(), TRUE);
           $properties_ids = roomify_property_ids();
           foreach ($properties as $property) {
 
