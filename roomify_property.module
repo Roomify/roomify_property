@@ -1119,6 +1119,15 @@ function roomify_property_entity_presave($entity, $type) {
         $type_referenced->uid = $entity->uid;
         $type_referenced->save();
       }
+
+      $units = bat_unit_load_multiple(FALSE, array('type_id' => $type_referenced->type_id));
+      foreach ($units as $unit) {
+        // Sync Unit author with Property author.
+        if ($unit->uid != $entity->uid) {
+          $unit->uid = $entity->uid;
+          $unit->save();
+        }
+      }
     }
   }
 }
