@@ -71,10 +71,14 @@ function property_bat_facets_availability($form, &$form_state, $elements) {
   $end_date_id = drupal_html_id('datepicker-end-date');
   $end_date_selector = '#' . $start_date_id . ' .form-text';
 
+
+  $days_advance = variable_get('roomify_accommodation_booking_days_in_advance', 0);
+  $future_limit = variable_get('roomify_accommodation_booking_future_limit', 15552000);
+
   // Specify the default datepicker parameters (see date_popup_element_info())
   $datepicker_options = array(
-    'minDate' => '+1d',
-    'maxDate' => '+1y',
+    'minDate' => '+' . $days_advance . 'd',
+    'maxDate' => '+' . ($future_limit / 86400) . 'd',
     'numberOfMonths' => 1,
     'changeMonth' => FALSE,
     'changeYear' => FALSE,
