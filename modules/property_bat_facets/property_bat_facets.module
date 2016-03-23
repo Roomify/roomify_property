@@ -36,7 +36,7 @@ function property_bat_facets_facetapi_facet_info_alter(array &$facet_info, array
 /**
  * Callback for facet availability form.
  */
-function property_bat_facets_availability($form, &$form_state, $elements) {
+function property_bat_facets_availability($form, &$form_state) {
   $params = drupal_get_query_parameters();
   $now = date_create();
 
@@ -72,7 +72,17 @@ function property_bat_facets_availability($form, &$form_state, $elements) {
   $end_date_selector = '#' . $start_date_id . ' .form-text';
 
   $days_advance = variable_get('roomify_accommodation_booking_days_in_advance', 0);
+
+  $allowed_values = array();
+
+  $start_date = new DateTime();
+  if ($days_advance = variable_get('roomify_accommodation_booking_days_in_advance', 0)) {
+    $start_date->add(new DateInterval('P' . $days_advance . 'D'));
+  }
+
+  $end_date = clone($start_date);
   $future_limit = variable_get('roomify_accommodation_booking_future_limit', 15552000);
+  $end_date->add(new DateInterval('PT' . $future_limit . 'S'));
 
   $options = array(0 => t('All Areas'));
   $vid = taxonomy_vocabulary_machine_name_load('location')->vid;
@@ -100,16 +110,15 @@ function property_bat_facets_availability($form, &$form_state, $elements) {
 
   $form['container']['arrival'] = array(
     '#prefix' => '<div class="form-wrapper bat-date-range"><div class="start-date" id="' . $start_date_id . '">',
+    '#title' => t('Arrival'),
     '#suffix' => '</div>',
     '#type' => 'date_popup',
     '#description' => '',
-    '#title' => t('Arrival'),
     '#date_format' => $date_format,
     '#default_value' => isset($arrival) ? $arrival : '',
     '#datepicker_options' => array_merge($datepicker_options, array('endDateSelector' => $end_date_selector)),
-    '#required' => TRUE,
-    '#attributes' => array(
-      'placeholder' => t('Arrival')),
+    '#required' => FALSE,
+    '#attributes' => array('placeholder' => t('Arrival')),
   );
 
   $form['container']['departure'] = array(
@@ -121,9 +130,8 @@ function property_bat_facets_availability($form, &$form_state, $elements) {
     '#date_format' => $date_format,
     '#default_value' => isset($departure) ? $departure : '',
     '#datepicker_options' => array_merge($datepicker_options, array('startDateSelector' => $start_date_selector)),
-    '#required' => TRUE,
-    '#attributes' => array(
-      'placeholder' => t('Departure')),
+    '#required' => FALSE,
+    '#attributes' => array('placeholder' => t('Departure')),
     '#attached' => array(
       'js' => array(
         drupal_get_path('module', 'bat') . '/js/bat_date_popup.js',
@@ -165,9 +173,9 @@ function property_bat_facets_availability($form, &$form_state, $elements) {
   );
 
   $form['container']['submit'] = array(
-    '#type' => 'submit',
-    '#prefix' => '<div class="search-submit">',
+    '#prefix' => '<div class="search-availability-submit">',
     '#suffix' => '</div>',
+    '#type' => 'submit',
     '#value' => t('Search'),
   );
 
@@ -175,29 +183,65 @@ function property_bat_facets_availability($form, &$form_state, $elements) {
 }
 
 /**
+ * Validation handler.
+ */
+function property_bat_facets_availability_validate($form, &$form_state) {
+  if (!isset($form_state['values']['arrival']) && !isset($form_state['values']['departure'])) {
+    $group_size = $form_state['values']['group_size'];
+    $location = $form_state['values']['location'];
+    $segment = '';
+
+    if ($location) {
+      $area_term = taxonomy_term_load($location);
+      $location_filter  = str_replace(' ', '-', $area_term->name);
+      $segment .= '/location/' . $location_filter;
+    }
+    if ($group_size) {
+      // Need this for Ranges.
+      $segment .= '/capacity/' . '[1 TO ' . $group_size . ']';
+    }
+
+    drupal_goto('availability-search' . $segment, array('query' => array(
+      'location' => $location,
+      'group_size' => $group_size,
+    )));
+
+  }
+
+  if (isset($form_state['values']['arrival']) && !isset($form_state['values']['departure'])) {
+    form_set_error('departure', t('Departure date is required.'));
+  }
+
+  if (!isset($form_state['values']['arrival']) && isset($form_state['values']['departure'])) {
+    form_set_error('arrival', t('Arrival date is required.'));
+  }
+}
+
+/**
  * submit handler.
  */
 function property_bat_facets_availability_submit($form, &$form_state) {
-  
+
   // Set location to "All" if not selected.
   $location = $form_state['values']['location'];
   if (!$location) {
     $location = 'All';
   }
-  $segment = '';
 
+  $group_size = $form_state['values']['group_size'];
+  $segment = '';
 
   if ($location != 'All') {
     $area_term = taxonomy_term_load($location);
     $location_filter  = str_replace(' ', '-', $area_term->name);
     $segment .= '/location/' . $location_filter;
-  
   }
-  if ($form_state['values']['group_size']) {
-    $segment .= '/capacity/' . $form_state['values']['group_size'];
+
+  if ($group_size) {
+    $segment .= '/capacity/' . '[1 TO ' . $group_size . ']';
   }
-  
-  $form_state['redirect'] = array($_GET['q'] . $segment, array('query' => array('bat_start_date' => $form_state['values']['arrival'], 'bat_end_date' => $form_state['values']['departure'], 'location' => $form_state['values']['location'], 'group_size' => $form_state['values']['group_size'])));
+
+  $form_state['redirect'] = array('availability-search' . $segment, array('query' => array('bat_start_date' => $form_state['values']['arrival'], 'bat_end_date' => $form_state['values']['departure'], 'location' => $form_state['values']['location'], 'group_size' => $form_state['values']['group_size'])));
 }
 
 /**
