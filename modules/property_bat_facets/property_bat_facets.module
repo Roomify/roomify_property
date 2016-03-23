@@ -184,15 +184,20 @@ function property_bat_facets_availability_submit($form, &$form_state) {
   if (!$location) {
     $location = 'All';
   }
+  $segment = '';
 
-  if ($location) {
+
+  if ($location != 'All') {
     $area_term = taxonomy_term_load($location);
     $location_filter  = str_replace(' ', '-', $area_term->name);
-     $form_state['redirect'] = array($_GET['q'] . '/location/' . $location_filter, array('query' => array('bat_start_date' => $form_state['values']['arrival'], 'bat_end_date' => $form_state['values']['departure'], 'location' => $form_state['values']['location'], 'group_size' => $form_state['values']['group_size'])));
+    $segment .= '/location/' . $location_filter;
+  
   }
-  else {
-    $form_state['redirect'] = array($_GET['q'], array('query' => array('bat_start_date' => $form_state['values']['arrival'], 'bat_end_date' => $form_state['values']['departure'], 'location' => $form_state['values']['location'], 'group_size' => $form_state['values']['group_size'])));
+  if ($form_state['values']['group_size']) {
+    $segment .= '/capacity/' . $form_state['values']['group_size'];
   }
+  
+  $form_state['redirect'] = array($_GET['q'] . $segment, array('query' => array('bat_start_date' => $form_state['values']['arrival'], 'bat_end_date' => $form_state['values']['departure'], 'location' => $form_state['values']['location'], 'group_size' => $form_state['values']['group_size'])));
 }
 
 /**
