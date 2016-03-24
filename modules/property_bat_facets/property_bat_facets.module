@@ -129,7 +129,7 @@ function property_bat_facets_availability($form, &$form_state) {
     '#description' => '',
     '#date_format' => $date_format,
     '#default_value' => isset($departure) ? $departure : '',
-    '#datepicker_options' => array_merge($datepicker_options, array('startDateSelector' => $start_date_selector)),
+    '#datepicker_options' => array_merge($datepicker_options, array('startDateSelector' => $start_date_selector, 'endDateDays' => 1)),
     '#required' => FALSE,
     '#attributes' => array('placeholder' => t('Departure')),
     '#attached' => array(
