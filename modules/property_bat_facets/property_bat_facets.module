@@ -198,7 +198,8 @@ function property_bat_facets_availability_validate($form, &$form_state) {
     }
     if ($group_size) {
       // Need this for Ranges.
-      $segment .= '/capacity/' . '[1 TO ' . $group_size . ']';
+      // Filter search from group_size to group_size x 2.
+      $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $group_size * 2 . ']';
     }
 
     drupal_goto('availability-search' . $segment, array('query' => array(
@@ -238,7 +239,7 @@ function property_bat_facets_availability_submit($form, &$form_state) {
   }
 
   if ($group_size) {
-    $segment .= '/capacity/' . '[1 TO ' . $group_size . ']';
+    $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $group_size * 2 . ']';
   }
 
   $form_state['redirect'] = array('availability-search' . $segment, array('query' => array('bat_start_date' => $form_state['values']['arrival'], 'bat_end_date' => $form_state['values']['departure'], 'location' => $form_state['values']['location'], 'group_size' => $form_state['values']['group_size'])));
