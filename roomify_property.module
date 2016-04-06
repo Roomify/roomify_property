@@ -205,6 +205,24 @@ function roomify_property_add_access() {
 }
 
 /**
+ * Access callback: Checks whether the user has permission to manage rooms.
+ *
+ * @return bool
+ *   TRUE if the user has permission, otherwise FALSE.
+ */
+function roomify_property_manage_types_access($property) {
+  if (user_access('administer roomify_property_type entities')) {
+    return TRUE;
+  }
+
+  if (roomify_property_access('update', $property)) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/**
  * The class used for property entities
  */
 class RoomifyProperty extends Entity {
