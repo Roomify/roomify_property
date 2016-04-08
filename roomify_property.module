@@ -866,11 +866,13 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
           '#element_validate' => array('element_validate_integer_positive'),
         );
       }
+
       $form['types_container']['add_type'] = array(
         '#type' => 'submit',
         '#value' => t('add another type'),
         '#submit' => array('roomify_property_wizard_form_add_one'),
       );
+
       if ($form_state['num_types'] > 1) {
         $form['types_container']['remove_name'] = array(
           '#type' => 'submit',
@@ -962,6 +964,7 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
   // submitted information.
   $property_name = $form_state['step_information'][1]['stored_values']['property_name'];
   $property_type = $form_state['step_information'][1]['stored_values']['property_type'];
+
   if ($property_id = $form_state['step_information'][1]['stored_values']['property_id']) {
     $property = roomify_property_load($property_id);
   }
@@ -979,9 +982,11 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
       $type->type = 'home';
       $type->uid = $user->uid;
       $type->created = time();
+
       $type->field_st_max_capacity[LANGUAGE_NONE][0]['value'] = $form_state['step_information'][2]['stored_values']['max_occupants'];
       $type->field_st_default_price[LANGUAGE_NONE][0]['amount'] = $form_state['step_information'][2]['stored_values']['default_price'] * 100;
       $type->field_st_default_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
+
       $type->save();
 
       $property->property_bat_type_reference[LANGUAGE_NONE][0]['target_id'] = $type->type_id;
@@ -996,35 +1001,45 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
           unset($type_values[$index]);
         }
       }
+
       $type_ids = array();
       for ($i = 0; $i < count($type_values); $i++) {
-        // Create type.
-        $type = new BatType();
-        $type->name = $type_values[$i]['name'];
-        $type->type = 'room';
-        $type->uid = $user->uid;
-        $type->created = time();
-        $type->field_st_max_capacity[LANGUAGE_NONE][0]['value'] = $type_values[$i]['max_occupancy'];
-        $type->field_st_default_price[LANGUAGE_NONE][0]['amount'] = $type_values[$i]['default_price'] * 100;
-        $type->field_st_default_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
-        $type->save();
-        $type_ids[] = $type->type_id;
+        if ($type_values[$i]['name'] != '' && $type_values[$i]['max_occupancy'] != '' &&
+            $type_values[$i]['default_price'] != '' && $type_values[$i]['rooms'] != '') {
+          // Create type.
+          $type = new BatType();
+          $type->name = $type_values[$i]['name'];
+          $type->type = 'room';
+          $type->uid = $user->uid;
+          $type->created = time();
 
-        // Create units for this type.
-        for ($j = 0; $j < $type_values[$i]['rooms']; $j++) {
-          $unit = bat_unit_create(array('type' => 'default'));
-          $unit->name = $type->name . ' ' . ($j + 1);
-          $unit->created = !empty($unit->date) ? strtotime($unit->date) : REQUEST_TIME;
-          $unit->type_id = $type->type_id;
-          $unit->default_state = 1;
-          $unit->uid = $user->uid;
-          $unit->save();
+          $type->field_st_max_capacity[LANGUAGE_NONE][0]['value'] = $type_values[$i]['max_occupancy'];
+          $type->field_st_default_price[LANGUAGE_NONE][0]['amount'] = $type_values[$i]['default_price'] * 100;
+          $type->field_st_default_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
+
+          $type->save();
+
+          $type_ids[] = $type->type_id;
+
+          // Create units for this type.
+          for ($j = 0; $j < $type_values[$i]['rooms']; $j++) {
+            $unit = bat_unit_create(array('type' => 'default'));
+
+            $unit->name = $type->name . ' ' . ($j + 1);
+            $unit->created = !empty($unit->date) ? strtotime($unit->date) : REQUEST_TIME;
+            $unit->type_id = $type->type_id;
+            $unit->default_state = 1;
+            $unit->uid = $user->uid;
+
+            $unit->save();
+          }
         }
       }
 
       foreach ($type_ids as $type_id) {
         $property->property_bat_type_reference[LANGUAGE_NONE][]['target_id'] = $type_id;
       }
+
       $property->save();
 
       break;
@@ -1035,7 +1050,6 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
   $form_state['ajax_commands'][] = ctools_modal_command_dismiss();
 
   // Redirect user to property page.
-  $delay = 0;
   $options = array('query' => array('destination' => 'user'));
   if (!empty($form_state['#redirect'])) {
     $path = $form_state['#redirect'];
@@ -1043,7 +1057,8 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
   else {
     $path = 'admin/bat/config/property/manage/' . $property->property_id;
   }
-  $form_state['ajax_commands'][] = ctools_ajax_command_redirect($path, $delay, $options);
+
+  $form_state['ajax_commands'][] = ctools_ajax_command_redirect($path, 0, $options);
 }
 
 /**
