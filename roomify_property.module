@@ -1186,3 +1186,22 @@ function roomify_property_form_bat_type_edit_form_delete_submit($form, &$form_st
     $_GET['destination'] = 'admin/bat/config/property/manage/' . $type->field_st_property_reference[LANGUAGE_NONE][0]['target_id'];
   }
 }
+
+/**
+ * Implements hook_form_alter
+ *
+ * @param $form
+ * @param $form_state
+ */
+function roomify_property_form_roomify_property_operation_form_alter(&$form, &$form_state) {
+  $form['#submit'][] = 'roomify_property_form_roomify_property_operation_delete';
+}
+
+/**
+ * Custom callback - redirects user to /user following a property delete action. 
+ * @param $form
+ * @param $form_state
+ */
+function roomify_property_form_roomify_property_operation_delete(&$form, &$form_state) {
+  $form_state['redirect'] = array('user');
+}
