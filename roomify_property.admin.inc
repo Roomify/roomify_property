@@ -162,6 +162,8 @@ function roomify_property_create_form_wrapper($type) {
  * Geneproperties the property editing form.
  */
 function roomify_property_edit_form($form, &$form_state, $property) {
+  global $user;
+
   if ($property->status == 0) {
     $form['unpublished'] = array(
       '#markup' => '<div style="color: #FF4500; font-size: 20px; float: right;">' . t('Property suspend') . '</div>',
@@ -251,21 +253,28 @@ function roomify_property_edit_form($form, &$form_state, $property) {
     '#submit' => $submit + array('roomify_property_edit_form_submit'),
   );
 
-  if ($property->status) {
-    $form['actions']['suspend'] = array(
-      '#type' => 'submit',
-      '#value' => t('Suspend Property'),
-      '#suffix' => l(t('Cancel'), 'admin/bat/config/property'),
-      '#submit' => $submit + array('roomify_property_form_submit_suspend'),
-    );
-  }
-  else {
-    $form['actions']['activate'] = array(
-      '#type' => 'submit',
-      '#value' => t('Activate Property'),
-      '#suffix' => l(t('Cancel'), 'admin/bat/config/property'),
-      '#submit' => $submit + array('roomify_property_form_submit_activate'),
-    );
+  if (!(isset($property->is_new) && $property->is_new)) {
+    if (user_access('unpublish any property') || (user_access('unpublish own property') && $property->uid == $user->uid)) {
+      if ($property->status) {
+        $form['actions']['suspend'] = array(
+          '#type' => 'submit',
+          '#value' => t('Suspend Property'),
+          '#suffix' => l(t('Cancel'), 'admin/bat/config/property'),
+          '#submit' => $submit + array('roomify_property_form_submit_suspend'),
+        );
+      }
+      else {
+        $form['actions']['activate'] = array(
+          '#type' => 'submit',
+          '#value' => t('Activate Property'),
+          '#suffix' => l(t('Cancel'), 'admin/bat/config/property'),
+          '#submit' => $submit + array('roomify_property_form_submit_activate'),
+        );
+      }
+    }
+    else {
+      $form['actions']['submit']['#suffix'] = l(t('Cancel'), 'admin/bat/config/property');
+    }
   }
 
   if (!empty($property->name) && roomify_property_access('delete', $property)) {

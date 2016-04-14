@@ -149,6 +149,31 @@ function roomify_property_permission() {
     ),
   );
 
+  $permissions += array(
+    'view any unpublished properties' => array(
+      'title' => t('View any unpublish property'),
+      'description' => t('Allows users to view any property currently suspended.'),
+    ),
+  );
+  $permissions += array(
+    'view own unpublished properties' => array(
+      'title' => t('View own unpublish property'),
+      'description' => t('Allows users to view own property currently suspended.'),
+    ),
+  );
+  $permissions += array(
+    'unpublish any property' => array(
+      'title' => t('Unpublish any property'),
+      'description' => t('Allows users to set any property as suspended.'),
+    ),
+  );
+  $permissions += array(
+    'unpublish own property' => array(
+      'title' => t('Unpublish own property'),
+      'description' => t('Allows users to set own property as suspended.'),
+    ),
+  );
+
   $permissions += bat_entity_access_permissions('roomify_property');
 
   return $permissions;
@@ -180,7 +205,21 @@ function roomify_property_views_api() {
  *   Whether access is allowed or not.
  */
 function roomify_property_access($op, $property = NULL, $account = NULL) {
-  return bat_entity_access($op, $property, $account, 'roomify_property');
+  global $user;
+  $account = isset($account) ? $account : $user;
+
+  if ($op == 'view' && $property->status == 0) {
+    if (user_access('view any unpublished properties') ||
+       (user_access('view own unpublished properties') && $account->uid == $property->uid)) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
+    }
+  }
+  else {
+    return bat_entity_access($op, $property, $account, 'roomify_property');
+  }
 }
 
 /**
