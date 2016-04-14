@@ -1188,10 +1188,9 @@ function roomify_property_form_bat_type_edit_form_delete_submit($form, &$form_st
 }
 
 /**
- * Implements hook_form_alter
+ * Implements hook_form_FORM_ID_alter().
  *
- * @param $form
- * @param $form_state
+ * FORM_ID = roomify_property_operation_form
  */
 function roomify_property_form_roomify_property_operation_form_alter(&$form, &$form_state) {
   $form['#submit'][] = 'roomify_property_form_roomify_property_operation_delete';
@@ -1199,9 +1198,7 @@ function roomify_property_form_roomify_property_operation_form_alter(&$form, &$f
 
 /**
  * Custom callback - redirects user to /user following a property delete action. 
- * @param $form
- * @param $form_state
  */
-function roomify_property_form_roomify_property_operation_delete(&$form, &$form_state) {
-  $form_state['redirect'] = array('user');
+function roomify_property_form_roomify_property_operation_delete($form, &$form_state) {
+  $form_state['redirect'] = 'user';
 }

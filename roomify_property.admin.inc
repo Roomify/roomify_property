@@ -162,6 +162,13 @@ function roomify_property_create_form_wrapper($type) {
  * Geneproperties the property editing form.
  */
 function roomify_property_edit_form($form, &$form_state, $property) {
+  if ($property->status == 0) {
+    $form['unpublished'] = array(
+      '#markup' => '<div style="color: #FF4500; font-size: 20px; float: right;">' . t('Property suspend') . '</div>',
+      '#weight' => -100,
+    );
+  }
+
   $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Name'),
@@ -237,18 +244,36 @@ function roomify_property_edit_form($form, &$form_state, $property) {
   if (!empty($form['#submit'])) {
     $submit += $form['#submit'];
   }
+
   $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save Property'),
     '#submit' => $submit + array('roomify_property_edit_form_submit'),
   );
+
+  if ($property->status) {
+    $form['actions']['suspend'] = array(
+      '#type' => 'submit',
+      '#value' => t('Suspend Property'),
+      '#suffix' => l(t('Cancel'), 'admin/bat/config/property'),
+      '#submit' => $submit + array('roomify_property_form_submit_suspend'),
+    );
+  }
+  else {
+    $form['actions']['activate'] = array(
+      '#type' => 'submit',
+      '#value' => t('Activate Property'),
+      '#suffix' => l(t('Cancel'), 'admin/bat/config/property'),
+      '#submit' => $submit + array('roomify_property_form_submit_activate'),
+    );
+  }
+
   if (!empty($property->name) && roomify_property_access('delete', $property)) {
     $form['actions']['delete'] = array(
       '#type' => 'submit',
       '#value' => t('Delete Property'),
-      '#suffix' => l(t('Cancel'), 'admin/bat/config/property'),
       '#submit' => $submit + array('roomify_property_form_submit_delete'),
-      '#weight' => 45,
+      '#attributes' => array('style' => 'float: right;'),
     );
   }
 
@@ -268,7 +293,7 @@ function roomify_property_edit_form_validate(&$form, &$form_state) {
 /**
  * Form API submit callback for the property form.
  */
-function roomify_property_edit_form_submit(&$form, &$form_state) {
+function roomify_property_edit_form_submit($form, &$form_state) {
   $property = entity_ui_controller('roomify_property')->entityFormSubmitBuildEntity($form, $form_state);
 
   $property->created = !empty($property->date) ? strtotime($property->date) : REQUEST_TIME;
@@ -292,7 +317,7 @@ function roomify_property_edit_form_submit(&$form, &$form_state) {
 /**
  * Form API submit callback for the delete button.
  */
-function roomify_property_form_submit_delete(&$form, &$form_state) {
+function roomify_property_form_submit_delete($form, &$form_state) {
   $destination = array();
   if (isset($_GET['destination'])) {
     $destination = drupal_get_destination();
@@ -300,6 +325,22 @@ function roomify_property_form_submit_delete(&$form, &$form_state) {
   }
 
   $form_state['redirect'] = array('admin/bat/config/property/manage/' . $form_state['roomify_property']->property_id . '/delete', array('query' => $destination));
+}
+
+/**
+ * Suspend Property.
+ */
+function roomify_property_form_submit_suspend($form, &$form_state) {
+  $form_state['roomify_property']->status = 0;
+  $form_state['roomify_property']->save();
+}
+
+/**
+ * Activate Property.
+ */
+function roomify_property_form_submit_activate($form, &$form_state) {
+  $form_state['roomify_property']->status = 1;
+  $form_state['roomify_property']->save();
 }
 
 /**

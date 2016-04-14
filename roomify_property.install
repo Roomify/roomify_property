@@ -53,6 +53,12 @@ function roomify_property_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'status' => array(
+        'description' => 'Boolean indicating whether the property is published (visible to non-administrators).',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
       'uid' => array(
         'description' => 'The {users}.uid that created this property.',
         'type' => 'int',
@@ -122,4 +128,19 @@ function roomify_property_schema() {
   );
 
   return $schema;
+}
+
+/**
+ * Add field status.
+ */
+function roomify_property_update_7001() {
+  $field = array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0x01,
+    'size' => 'tiny',
+    'description' => 'The exportable status of the entity.',
+  );
+
+  db_add_field('roomify_properties', 'status', $field);
 }
