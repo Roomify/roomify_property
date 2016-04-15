@@ -166,7 +166,7 @@ function roomify_property_edit_form($form, &$form_state, $property) {
 
   if ($property->status == 0) {
     $form['unpublished'] = array(
-      '#markup' => '<div style="color: #FF4500; font-size: 20px; float: right;">' . t('Property suspend') . '</div>',
+      '#markup' => '<div style="color: #FF4500; font-size: 20px; float: right;">' . t('Property suspended') . '</div>',
       '#weight' => -100,
     );
   }
