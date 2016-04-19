@@ -25,7 +25,8 @@ class RoomifyPropertyUIController extends EntityDefaultUIController {
 
     // Add property type specific types menu item.
     $items[$this->path . '/manage/%roomify_property/types'] = array(
-      'title' => 'Manage Rooms',
+      'title callback' => 'roomify_property_types_title_callback',
+      'title arguments' => array(5),
       'page callback' => 'roomify_property_types_wrapper',
       'page arguments' => array(5),
       'access callback' => 'roomify_property_manage_types_access',
@@ -402,4 +403,19 @@ function roomify_property_set_breadcrumb() {
   );
 
   drupal_set_breadcrumb($breadcrumb);
+}
+
+/**
+ * 'Manage Rooms' title callback.
+ */
+function roomify_property_types_title_callback($property) {
+  if ($property->type == 'casa_property') {
+    return t('Manage House');
+  }
+  elseif ($property->type == 'locanda_property') {
+    return t('Manage Rooms');
+  }
+  else {
+    return t('Manage Units');
+  }
 }
