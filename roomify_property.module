@@ -1014,19 +1014,25 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
     $property = roomify_property_load($property_id);
   }
   else {
-    $property = new RoomifyProperty();
-    $property->name = $property_name;
-    $property->type = $property_type;
-    $property->uid = $user->uid;
+    $property = roomify_property_create(
+      array(
+        'name' => $property_name,
+        'type' => $property_type,
+        'uid' => $user->uid,
+      )
+    );
   }
 
   switch ($property_type) {
     case 'casa_property':
-      $type = new BatType();
-      $type->name = 'Home';
-      $type->type = 'home';
-      $type->uid = $user->uid;
-      $type->created = time();
+      $type = bat_type_create(
+        array(
+          'name' => 'Home',
+          'type' => 'home',
+          'uid' => $user->uid,
+          'created' => REQUEST_TIME,
+        )
+      );
 
       $type->field_st_max_capacity[LANGUAGE_NONE][0]['value'] = $form_state['step_information'][2]['stored_values']['max_occupants'];
       $type->field_st_default_price[LANGUAGE_NONE][0]['amount'] = $form_state['step_information'][2]['stored_values']['default_price'] * 100;
@@ -1035,9 +1041,9 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
       $type->save();
 
       $property->property_bat_type_reference[LANGUAGE_NONE][0]['target_id'] = $type->type_id;
-      $property->save();
 
       break;
+
     case 'locanda_property':
       $type_values = $form_state['step_information'][2]['stored_values']['types_container'];
       // Remove form values that aren't type info.
@@ -1052,11 +1058,14 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
         if ($type_values[$i]['name'] != '' && $type_values[$i]['max_occupancy'] != '' &&
             $type_values[$i]['default_price'] != '' && $type_values[$i]['rooms'] != '') {
           // Create type.
-          $type = new BatType();
-          $type->name = $type_values[$i]['name'];
-          $type->type = 'room';
-          $type->uid = $user->uid;
-          $type->created = time();
+          $type = bat_type_create(
+            array(
+              'name' => $type_values[$i]['name'],
+              'type' => 'room',
+              'uid' => $user->uid,
+              'created' => REQUEST_TIME,
+            )
+          );
 
           $type->field_st_max_capacity[LANGUAGE_NONE][0]['value'] = $type_values[$i]['max_occupancy'];
           $type->field_st_default_price[LANGUAGE_NONE][0]['amount'] = $type_values[$i]['default_price'] * 100;
@@ -1085,10 +1094,43 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
         $property->property_bat_type_reference[LANGUAGE_NONE][]['target_id'] = $type_id;
       }
 
-      $property->save();
-
       break;
+
+    default:
+      $type_values = $form_state['step_information'][2]['stored_values']['types_container'];
+      // Remove form values that aren't type info.
+      foreach ($type_values as $index => $type_value) {
+        if (!is_array($type_value)) {
+          unset($type_values[$index]);
+        }
+      }
+
+      $type_ids = array();
+      for ($i = 0; $i < count($type_values); $i++) {
+        if ($type_values[$i]['name'] != '' && $type_values[$i]['max_occupancy'] != '' &&
+            $type_values[$i]['default_price'] != '' && $type_values[$i]['rooms'] != '') {
+          // Create type.
+          $type = bat_type_create(
+            array(
+              'name' => $type_values[$i]['name'],
+              'type' => 'room',
+              'uid' => $user->uid,
+              'created' => REQUEST_TIME,
+            )
+          );
+
+          $type->save();
+
+          $type_ids[] = $type->type_id;
+        }
+      }
+
+      foreach ($type_ids as $type_id) {
+        $property->property_bat_type_reference[LANGUAGE_NONE][]['target_id'] = $type_id;
+      }
   }
+
+  $property->save();
 
   // Close the modal.
   ctools_add_js('ajax-responder');
@@ -1138,11 +1180,12 @@ function roomify_type_wizard($property, $ajax) {
       'title' => t('Add New Type'),
     );
 
-    $step = 2;
-    $form_state['step'] = $step;
-    $form_state['step_information'][1]['stored_values']['property_type'] = 'locanda_property';
+    $form_state['step'] = 2;
+
+    $form_state['step_information'][1]['stored_values']['property_type'] = $property->type;
     $form_state['step_information'][1]['stored_values']['property_id'] = $property->property_id;
     $form_state['step_information'][1]['stored_values']['property_name'] = $property->name;
+
     $form_state['#redirect'] = 'admin/bat/config/property/manage/' . $property->property_id . '/types';
 
     // Use ctools to generate ajax instructions for the browser to create
