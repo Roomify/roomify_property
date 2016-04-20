@@ -30,6 +30,7 @@ function roomify_property_views_default_views() {
   $handler->display->display_options['header']['area']['id'] = 'area';
   $handler->display->display_options['header']['area']['table'] = 'views';
   $handler->display->display_options['header']['area']['field'] = 'area';
+  $handler->display->display_options['header']['area']['empty'] = TRUE;
   $handler->display->display_options['header']['area']['content'] = '<a class="button add-type-button ctools-use-modal ctools-modal-roomify-dashboard-modal-style" href="/admin/bat/config/type/wizard/!1/nojs">add types</a>';
   $handler->display->display_options['header']['area']['format'] = 'filtered_text';
   $handler->display->display_options['header']['area']['tokenize'] = TRUE;
