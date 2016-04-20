@@ -699,6 +699,15 @@ function roomify_property_wizard_form($form, &$form_state) {
       '#value' => t('Next'),
       '#name' => 'next',
       '#submit' => array('roomify_property_wizard_form_next_submit'),
+      '#states' => array(
+        'disabled' => array(
+          array(
+            array(':input[name="property_type"]' => array('value' => FALSE)),
+            'or',
+            array(':input[name="property_name"]' => array('value' => '')),
+          ),
+        ),
+      ),
     );
   }
   else {
@@ -710,6 +719,15 @@ function roomify_property_wizard_form($form, &$form_state) {
       '#type' => 'submit',
       '#value' => t('create property and add details'),
       '#suffix' => '<div class="clearfix"> </div>',
+      '#states' => array(
+        'disabled' => array(
+          array(
+            array(':input[name="default_price"]' => array('value' => '')),
+            'or',
+            array(':input[name="max_occupants"]' => array('value' => '')),
+          ),
+        ),
+      ),
     );
   }
 
@@ -763,7 +781,6 @@ function roomify_property_wizard_form_property_name($form, &$form_state) {
 
   $form['#attached']['js'] = array(
     drupal_get_path('module', 'roomify_dashboard') . '/js/roomify_dashboard_modal.js',
-    drupal_get_path('module', 'roomify_property') . '/js/property_wizard.js',
   );
   $form['#attached']['css'] = array(
     drupal_get_path('module', 'roomify_property') . '/css/property_name.css',
@@ -810,11 +827,6 @@ function roomify_property_wizard_form_property_name($form, &$form_state) {
  * Returns form elements for the 'type info' page of the wizard.
  */
 function roomify_property_wizard_form_type_info($form, &$form_state) {
-  $form = array();
-  $form['#attached']['js'] = array(
-    drupal_get_path('module', 'roomify_property') . '/js/property_wizard.js',
-  );
-
   $form['property_title'] = array(
     '#markup' => '<h2>' . $form_state['step_information'][1]['stored_values']['property_name'] . '</h2>'
   );
@@ -845,7 +857,9 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
         '#default_value' => !empty($form_state['values']['default_price']) ? $form_state['values']['default_price'] : '',
         '#element_validate' => array('element_validate_number'),
       );
+
       break;
+
     case 'locanda_property':
       $form['#attached']['css'][] = drupal_get_path('module', 'roomify_property') . '/css/property_type_locanda.css';
       // Because we have many fields with the same values, we have to set
