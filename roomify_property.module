@@ -621,6 +621,8 @@ function roomify_property_views_pre_render(&$view) {
     if (count($view->result) == 1 && $view->result[0]->bat_types_type == 'home') {
       unset($view->header['area']);
     }
+
+    $view->header['area']->options['content'] = l(t('add types'), 'admin/bat/config/type/wizard/' . $view->args[0] . '/nojs', array('attributes' => array('class' => 'button add-type-button ctools-use-modal ctools-modal-roomify-dashboard-modal-style')));
   }
 }
 
