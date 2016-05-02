@@ -1310,3 +1310,15 @@ function roomify_property_types_title_callback($property) {
     return t('Manage Units');
   }
 }
+
+/**
+ * Implements hook_entity_delete().
+ */
+function roomify_property_entity_delete($entity, $type) {
+  if ($type == 'roomify_property') {
+    foreach ($entity->property_bat_type_reference[LANGUAGE_NONE] as $type) {
+      $bat_type = bat_type_load($type['target_id']);
+      $bat_type->delete();
+    }
+  }
+}
