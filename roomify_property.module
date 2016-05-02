@@ -1295,3 +1295,18 @@ function roomify_property_form_roomify_property_operation_form_alter(&$form, &$f
 function roomify_property_form_roomify_property_operation_delete($form, &$form_state) {
   $form_state['redirect'] = 'user';
 }
+
+/**
+ * 'Manage Rooms' title callback.
+ */
+function roomify_property_types_title_callback($property) {
+  if ($property->type == 'casa_property') {
+    return t('Manage House');
+  }
+  elseif ($property->type == 'locanda_property') {
+    return t('Manage Rooms');
+  }
+  else {
+    return t('Manage Units');
+  }
+}

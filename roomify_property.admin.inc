@@ -404,18 +404,3 @@ function roomify_property_set_breadcrumb() {
 
   drupal_set_breadcrumb($breadcrumb);
 }
-
-/**
- * 'Manage Rooms' title callback.
- */
-function roomify_property_types_title_callback($property) {
-  if ($property->type == 'casa_property') {
-    return t('Manage House');
-  }
-  elseif ($property->type == 'locanda_property') {
-    return t('Manage Rooms');
-  }
-  else {
-    return t('Manage Units');
-  }
-}
