@@ -1286,14 +1286,55 @@ function roomify_property_form_bat_type_edit_form_delete_submit($form, &$form_st
  * FORM_ID = roomify_property_operation_form
  */
 function roomify_property_form_roomify_property_operation_form_alter(&$form, &$form_state) {
-  $form['#submit'][] = 'roomify_property_form_roomify_property_operation_delete';
+  if (module_exists('bat_booking')) {
+    $form['#validate'][] = 'roomify_property_form_roomify_property_operation_delete_validate';
+  }
+
+  $form['#submit'][] = 'roomify_property_form_roomify_property_operation_delete_submit';
 }
 
 /**
- * Custom callback - redirects user to /user following a property delete action. 
+ * Custom callback - redirects user to /user following a property delete action.
  */
-function roomify_property_form_roomify_property_operation_delete($form, &$form_state) {
+function roomify_property_form_roomify_property_operation_delete_submit($form, &$form_state) {
   $form_state['redirect'] = 'user';
+}
+
+/**
+ * Custom callback - check if there are associated bookings.
+ */
+function roomify_property_form_roomify_property_operation_delete_validate($form, &$form_state) {
+  $types = array();
+
+  $property = $form_state['roomify_property'];
+  foreach ($property->property_bat_type_reference[LANGUAGE_NONE] as $type) {
+    $types[] = $type['target_id'];
+  }
+
+  if (!empty($types)) {
+    $query = db_select('bat_bookings', 'b');
+    $query->join('field_data_booking_event_reference', 'e', 'e.entity_id = b.booking_id');
+    $query->join('field_data_event_bat_unit_reference', 'u', 'e.booking_event_reference_target_id = u.entity_id');
+    $query->join('bat_units', 'units', 'u.event_bat_unit_reference_target_id = units.unit_id');
+
+    $query->fields('b', array('booking_id'));
+
+    $query->condition('units.type_id', $types, 'IN');
+
+    $results = $query->execute()->fetchAll();
+
+    if (!empty($results)) {
+      $items['items'] = array();
+
+      foreach ($results as $booking_id) {
+        $items['items'][] = l(t('Booking @booking_id', array('@booking_id' => $booking_id->booking_id)), 'admin/bat/config/booking/manage/' . $booking_id->booking_id);
+      }
+
+      form_set_error('', t('Cannot delete this property because there are associated bookings. Please either re-assign bookings or delete them.'));
+
+      drupal_set_message(theme('item_list', $items), 'error');
+    }
+  }
 }
 
 /**
