@@ -158,7 +158,10 @@ function property_bat_facets_availability($form, &$form_state) {
     ),
   );
 
-  $group_options = array(1 => t('1 guest'));
+  $group_options = array(
+    0 => t('All'),
+    1 => t('1 guest'),
+  );
 
   for ($i = 2; $i <= 15; $i++) {
     $group_options[$i] = $i . t(' guests');
@@ -169,7 +172,7 @@ function property_bat_facets_availability($form, &$form_state) {
     '#title' => t('Group size'),
     '#description' => '',
     '#options' => $group_options,
-    '#default_value' => isset($params['group_size']) ? $params['group_size'] : 2,
+    '#default_value' => isset($params['group_size']) ? $params['group_size'] : 0,
   );
 
   $form['container']['submit'] = array(
