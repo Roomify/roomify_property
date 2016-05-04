@@ -4,10 +4,6 @@
  * @file
  */
 
-use Roomify\Bat\Calendar\Calendar;
-use Roomify\Bat\Event\Event;
-use Roomify\Bat\Store\DrupalDBStore;
-use Roomify\Bat\Unit\Unit;
 
 /**
  * Implements hook_ctools_plugin_api().
@@ -186,7 +182,7 @@ function property_bat_facets_availability($form, &$form_state) {
 }
 
 /**
- * Validation handler.
+ * Validation handler for property_bat_facets_availability form.
  */
 function property_bat_facets_availability_validate($form, &$form_state) {
   if (!isset($form_state['values']['arrival']) && !isset($form_state['values']['departure'])) {
@@ -222,7 +218,7 @@ function property_bat_facets_availability_validate($form, &$form_state) {
 }
 
 /**
- * submit handler.
+ * Submit handler for property_bat_facets_availability form.
  */
 function property_bat_facets_availability_submit($form, &$form_state) {
 

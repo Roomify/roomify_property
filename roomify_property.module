@@ -940,21 +940,23 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
  */
 function roomify_property_wizard_form_validate($form, &$form_state) {
   // Ensure that all values are set for each type.
-  $type_fields = array('name', 'rooms', 'default_price', 'max_occupancy');
-  $types = $form_state['input']['types_container'];
-  for ($i = 0; $i < count($types['name']); $i++) {
-    $check_fields = FALSE;
-    foreach ($type_fields as $field) {
-      if (strlen($types[$field][$i])) {
-        $check_fields = TRUE;
-      }
-    }
-
-    // At least one field was filled in for this type, ensure all fields were filled in.
-    if ($check_fields) {
+  if (isset($form_state['input']['types_container'])) {
+    $type_fields = array('name', 'rooms', 'default_price', 'max_occupancy');
+    $types = $form_state['input']['types_container'];
+    for ($i = 0; $i < count($types['name']); $i++) {
+      $check_fields = FALSE;
       foreach ($type_fields as $field) {
-        if (!strlen($types[$field][$i])) {
-          form_set_error('types_container][' . $field . '][' . $i, t('Please enter a value for all fields'));
+        if (strlen($types[$field][$i])) {
+          $check_fields = TRUE;
+        }
+      }
+
+      // At least one field was filled in for this type, ensure all fields were filled in.
+      if ($check_fields) {
+        foreach ($type_fields as $field) {
+          if (!strlen($types[$field][$i])) {
+            form_set_error('types_container][' . $field . '][' . $i, t('Please enter a value for all fields'));
+          }
         }
       }
     }
