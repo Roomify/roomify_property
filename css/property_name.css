@@ -9,11 +9,11 @@
   padding-top: 5px;
 }
 #modalContent div.ctools-modal-content div.form-radios div.form-item {
-  display:inline;
+  display: inline-block;
   margin-left: 40px;
 }
 #modalContent div.ctools-modal-content div.form-radios div.form-item label {
-  display:inline-block;
+  display: inline-block;
   max-width: 250px;
   vertical-align: middle;
 }
