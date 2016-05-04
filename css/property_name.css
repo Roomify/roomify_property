@@ -1,11 +1,11 @@
 #modalContent div.ctools-modal-content .modal-header .modal-title {
   display: none;
 }
-#roomify-property-wizard-form .form-item-property-name {
+.form-type-textfield.form-item-property-name {
   margin-left: 40px;
   vertical-align: middle;
 }
-#roomify-property-wizard-form .form-item-property-name label {
+.form-type-textfield.form-item-property-name label {
   padding-top: 5px;
 }
 #modalContent div.ctools-modal-content div.form-radios div.form-item {
