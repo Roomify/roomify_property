@@ -77,7 +77,7 @@ function property_bat_facets_availability($form, &$form_state) {
   }
 
   $end_date = clone($start_date);
-  $future_limit = variable_get('roomify_accommodation_booking_future_limit', 15552000);
+  $future_limit = variable_get('roomify_accommodation_booking_future_limit', 31104000);
   $end_date->add(new DateInterval('PT' . $future_limit . 'S'));
 
   $options = array(0 => t('All Areas'));
