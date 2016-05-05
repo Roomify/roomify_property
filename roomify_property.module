@@ -1330,7 +1330,7 @@ function roomify_property_form_roomify_property_operation_delete_validate($form,
       $items['items'] = array();
 
       foreach ($results as $booking_id) {
-        $items['items'][] = l(t('Booking @booking_id', array('@booking_id' => $booking_id->booking_id)), 'admin/bat/config/booking/manage/' . $booking_id->booking_id);
+        $items['items'][] = l(t('Booking @booking_id', array('@booking_id' => $booking_id->booking_id)), 'admin/bat/config/booking/manage/' . $booking_id->booking_id, array('query' => array('destination' => current_path())));
       }
 
       form_set_error('', t('Cannot delete this property because there are associated bookings. Please either re-assign bookings or delete them.'));
