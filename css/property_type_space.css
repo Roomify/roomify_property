@@ -1,0 +1,25 @@
+#modalContent div.ctools-modal-content input[id^="edit-finish"] {
+  float: right;
+}
+
+div.ctools-modal-content div.type-container {
+  width: auto;
+}
+div.ctools-modal-content div.type-container .form-item {
+  white-space: nowrap;
+  display: inline-block;
+  margin-bottom: 7px;
+}
+div.ctools-modal-content div.type-container .container-inline .form-item {
+  margin-right: 0;
+}
+
+div.ctools-modal-content div.type-container .container-inline .form-item input[name*=rooms] {
+  width: 1em;
+}
+div.ctools-modal-content div.type-container .container-inline .form-item input[name*=price] {
+  width: 2em;
+}
+div.ctools-modal-content div.type-container .container-inline .form-item input[name*=occupancy] {
+  width: 1em;
+}

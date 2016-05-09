@@ -930,6 +930,67 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
       }
 
       break;
+    case 'space_property':
+      $form['#attached']['css'][] = drupal_get_path('module', 'roomify_property') . '/css/property_type_space.css';
+      // Because we have many fields with the same values, we have to set
+      // #tree to be able to access them.
+      $form['#tree'] = TRUE;
+      $form['types_container'] = array(
+        '#type' => 'container',
+        '#title' => t('Define Space Types'),
+        '#prefix' => '<div id="types-container-wrapper">',
+        '#suffix' => '</div>',
+      );
+
+      // Build the fieldset with the proper number of types. We'll use
+      // $form_state['num_types'] to determine the number of fields to build.
+      if (empty($form_state['num_types'])) {
+        $form_state['num_types'] = 1;
+      }
+      for ($i = 0; $i < $form_state['num_types']; $i++) {
+        $form['types_container'][$i] = array(
+          '#type' => 'container',
+          '#attributes' => array(
+            'class' => array('container-inline'),
+          ),
+          '#prefix' => '<div class="type-container" id="type-container-' . $i . '">',
+          '#suffix' => '</div>',
+        );
+
+        $form['types_container'][$i]['name'] = array(
+          '#type' => 'textfield',
+          '#size' => '20',
+          '#title' => t('Type Name'),
+        );
+        $form['types_container'][$i]['rooms'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Number of Rooms'),
+          '#size' => 2,
+          '#element_validate' => array('element_validate_integer_positive'),
+        );
+        $form['types_container'][$i]['default_price'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Default Price'),
+          '#size' => 4,
+          '#element_validate' => array('element_validate_number'),
+        );
+      }
+
+      $form['types_container']['add_type'] = array(
+        '#type' => 'submit',
+        '#value' => t('add another type'),
+        '#submit' => array('roomify_property_wizard_form_add_one'),
+      );
+
+      if ($form_state['num_types'] > 1) {
+        $form['types_container']['remove_name'] = array(
+          '#type' => 'submit',
+          '#value' => t('remove a type'),
+          '#submit' => array('roomify_property_wizard_form_remove_one'),
+        );
+      }
+
+      break;
   }
 
   return $form;
@@ -1102,6 +1163,53 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
 
       break;
 
+    case 'space_property': 
+      $type_values = $form_state['step_information'][2]['stored_values']['types_container'];
+      // Remove form values that aren't type info.
+      foreach ($type_values as $index => $type_value) {
+        if (!is_array($type_value)) {
+          unset($type_values[$index]);
+        }
+      }
+
+      $type_ids = array();
+      for ($i = 0; $i < count($type_values); $i++) {
+        if ($type_values[$i]['name'] != '' && $type_values[$i]['default_price'] != '' && $type_values[$i]['rooms'] != '') {
+          // Create type.
+          $type = bat_type_create(
+            array(
+              'name' => $type_values[$i]['name'],
+              'type' => 'space',
+              'uid' => $user->uid,
+              'created' => REQUEST_TIME,
+            )
+          );
+
+          $type->space_default_price[LANGUAGE_NONE][0]['amount'] = $type_values[$i]['default_price'] * 100;
+          $type->space_default_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
+
+          $type->save();
+
+          $type_ids[] = $type->type_id;
+
+          // Create units for this type.
+          for ($j = 0; $j < $type_values[$i]['rooms']; $j++) {
+            $unit = bat_unit_create(array('type' => 'default'));
+
+            $unit->name = $type->name . ' ' . ($j + 1);
+            $unit->created = !empty($unit->date) ? strtotime($unit->date) : REQUEST_TIME;
+            $unit->type_id = $type->type_id;
+            $unit->default_state = 1;
+            $unit->uid = $user->uid;
+
+            $unit->save();
+          }
+        }
+      }
+
+      foreach ($type_ids as $type_id) {
+        $property->property_bat_type_reference[LANGUAGE_NONE][]['target_id'] = $type_id;
+      }
     default:
       $type_values = $form_state['step_information'][2]['stored_values']['types_container'];
       // Remove form values that aren't type info.
