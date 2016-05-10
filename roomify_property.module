@@ -1209,6 +1209,7 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
 
       foreach ($type_ids as $type_id) {
         $property->property_bat_type_reference[LANGUAGE_NONE][]['target_id'] = $type_id;
+        $property->property_space[LANGUAGE_NONE][]['type_id'] = $type_id;
       }
     default:
       $type_values = $form_state['step_information'][2]['stored_values']['types_container'];
