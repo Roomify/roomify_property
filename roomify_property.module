@@ -1458,6 +1458,9 @@ function roomify_property_types_title_callback($property) {
   elseif ($property->type == 'locanda_property') {
     return t('Manage Rooms');
   }
+  elseif ($property->type == 'space_property') {
+    return t('Manage Space types');
+  }
   else {
     return t('Manage Units');
   }
