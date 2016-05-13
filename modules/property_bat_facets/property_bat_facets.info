@@ -11,3 +11,6 @@ dependencies[] = search_api_facetapi
 
 files[] = src/BatStateSearchAPIQuery.php
 files[] = src/BatStateWidget.php
+files[] = src/BatActivityStateSearchAPIQuery.php
+files[] = src/BatActivityStateWidget.php
+

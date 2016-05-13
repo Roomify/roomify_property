@@ -328,7 +328,228 @@ function property_bat_facets_search_api_query_alter($query) {
             $query->condition($info['entity keys']['id'], $valid_properties_ids, 'IN');
           }
         }
+
+        // Activities.
+        if (isset($params['bat_activity_date']) && !empty($params['bat_activity_date'])) {
+          $start_date = new DateTime($params['bat_activity_date']);
+          $end_date = clone($start_date);
+          // Remove a minute because BAT considers as included
+          $end_date->sub(new DateInterval('PT1M'));
+
+          $event_types = array(
+            'single_day_activity',
+            'multi_day_activity',
+            'single_day_tour',
+            'multi_day_tour',
+          );
+          $all_valid_states = array(
+            'single_day_activity_availabile',
+            'multi_day_activity_availabile',
+            'single_day_tour_availabile',
+            'multi_day_tour_availabile',
+          );
+
+          $valid_properties_ids = array();
+
+          $properties = entity_load('roomify_property', FALSE, array(), TRUE);
+          $properties_ids = roomify_property_ids();
+          foreach ($properties as $property) {
+
+            $types = field_get_items('roomify_property', $property, 'property_bat_type_reference');
+
+            if (!empty($types)) {
+              foreach ($types as $type_id) {
+                $type = bat_type_load($type_id['target_id']);
+
+                $allowed_dates = roomify_activity_get_allowed_dates($type->type, $type->type_id, $start_date->format('Y'), $start_date->format('m'));
+                if (in_array($start_date->format('Y-m-d'), $allowed_dates)) {
+                  $valid_properties_ids[] = $property->property_id;
+                }
+              }
+            }
+          }
+
+          $context = array(
+            'types_before_search' => $properties_ids,
+            'start_date' => $start_date,
+            'end_date' => $end_date,
+            'event_type' => $event_types,
+            'valid_states' => $all_valid_states,
+          );
+
+          drupal_alter('property_bat_facets_search_results', $valid_properties_ids, $context);
+
+          // If no types are available, zero out results.
+          if (empty($valid_properties_ids)) {
+            $query->condition($info['entity keys']['id'], 1, '<');
+          }
+          else {
+            // Limit the search API query to entity ids with availability.
+            $query->condition($info['entity keys']['id'], $valid_properties_ids, 'IN');
+          }
+        }
       }
     }
   }
+}
+
+/**
+ * Callback for facet availability form.
+ */
+function property_bat_activity_facets_availability($form, &$form_state) {
+  $params = drupal_get_query_parameters();
+  $now = date_create();
+
+  $date_format = variable_get('bat_daily_date_format', 'Y-m-d');
+
+  // Year defaults to current year, although we are not filtering yet.
+  $default_year = $now->format('Y');
+
+  // Month doesn't have a default selection.
+  $default_month = '';
+
+  $form['container'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('container-inline'),
+    ),
+  );
+
+  if (isset($params['bat_activity_date']) && !empty($params['bat_activity_date'])) {
+    $start_date = new DateTime($params['bat_activity_date']);
+    $arrival = $start_date->format('Y-m-d');
+  }
+
+  // Create unique ids and selectors for each picker.
+  $start_date_id = drupal_html_id('datepicker-start-date');
+  $start_date_selector = '#' . $start_date_id . ' .form-text';
+
+  $days_advance = variable_get('roomify_accommodation_booking_days_in_advance', 0);
+
+  $allowed_values = array();
+
+  $start_date = new DateTime();
+  if ($days_advance = variable_get('roomify_accommodation_booking_days_in_advance', 0)) {
+    $start_date->add(new DateInterval('P' . $days_advance . 'D'));
+  }
+
+  $future_limit = variable_get('roomify_accommodation_booking_future_limit', 31104000);
+
+  $options = array(0 => t('All Areas'));
+  $vid = taxonomy_vocabulary_machine_name_load('location')->vid;
+  $terms = taxonomy_get_tree($vid);
+  foreach ($terms as $term) {
+    $options[$term->tid] = $term->name;
+  }
+
+  $form['container']['location'] = array(
+    '#type' => 'select',
+    '#title' => t('Area'),
+    '#options' => $options,
+    '#chosen' => TRUE,
+    '#default_value' => isset($params['location']) ? $params['location'] : 0,
+  );
+
+  // Specify the default datepicker parameters (see date_popup_element_info())
+  $datepicker_options = array(
+    'minDate' => '+' . $days_advance . 'd',
+    'maxDate' => '+' . ($future_limit / 86400) . 'd',
+    'numberOfMonths' => 1,
+    'changeMonth' => FALSE,
+    'changeYear' => FALSE,
+  );
+
+  $form['container']['arrival'] = array(
+    '#prefix' => '<div class="form-wrapper bat-date-range"><div class="start-date" id="' . $start_date_id . '">',
+    '#title' => t('Activity Date'),
+    '#suffix' => '</div>',
+    '#type' => 'date_popup',
+    '#description' => '',
+    '#date_format' => $date_format,
+    '#default_value' => isset($arrival) ? $arrival : '',
+    '#datepicker_options' => array_merge($datepicker_options),
+    '#required' => FALSE,
+    '#attributes' => array('placeholder' => t('Activity Date')),
+  );
+
+  $group_options = array(
+    0 => t('All'),
+    1 => t('1 guest'),
+  );
+
+  for ($i = 2; $i <= 15; $i++) {
+    $group_options[$i] = $i . t(' guests');
+  }
+
+  $form['container']['group_size'] = array(
+    '#type' => 'select',
+    '#title' => t('Group size'),
+    '#description' => '',
+    '#options' => $group_options,
+    '#default_value' => isset($params['group_size']) ? $params['group_size'] : 0,
+  );
+
+  $form['container']['submit'] = array(
+    '#prefix' => '<div class="search-availability-submit">',
+    '#suffix' => '</div>',
+    '#type' => 'submit',
+    '#value' => t('Search'),
+  );
+
+  return $form;
+}
+
+/**
+ * Validation handler for property_bat_facets_availability form.
+ */
+function property_bat_activity_facets_availability_validate($form, &$form_state) {
+  if (!isset($form_state['values']['arrival'])) {
+    $group_size = $form_state['values']['group_size'];
+    $location = $form_state['values']['location'];
+    $segment = '';
+
+    if ($location) {
+      $area_term = taxonomy_term_load($location);
+      $location_filter  = str_replace(' ', '-', $area_term->name);
+      $segment .= '/location/' . $location_filter;
+    }
+    if ($group_size) {
+      // Need this for Ranges.
+      // Filter search from group_size to group_size x 2.
+      $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $group_size * 2 . ']';
+    }
+
+    drupal_goto('activities-search' . $segment, array('query' => array(
+      'location' => $location,
+      'group_size' => $group_size,
+    )));
+
+  }
+}
+
+/**
+ * Submit handler for property_bat_facets_availability form.
+ */
+function property_bat_activity_facets_availability_submit($form, &$form_state) {
+
+  // Set location to "All" if not selected.
+  $location = $form_state['values']['location'];
+  if (!$location) {
+    $location = 'All';
+  }
+
+  $group_size = $form_state['values']['group_size'];
+  $segment = '';
+
+  if ($location != 'All') {
+    $area_term = taxonomy_term_load($location);
+    $location_filter  = str_replace(' ', '-', $area_term->name);
+    $segment .= '/location/' . $location_filter;
+  }
+
+  if ($group_size) {
+    $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $group_size * 2 . ']';
+  }
+
+  $form_state['redirect'] = array('activities-search' . $segment, array('query' => array('bat_activity_date' => $form_state['values']['arrival'], 'location' => $form_state['values']['location'], 'group_size' => $form_state['values']['group_size'])));
 }
