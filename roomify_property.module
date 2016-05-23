@@ -654,7 +654,11 @@ function roomify_property_views_pre_render(&$view) {
       unset($view->header['area']);
     }
     elseif (isset($view->header['area'])) {
-      $view->header['area']->options['content'] = l(t('add types'), 'admin/bat/config/type/wizard/' . $view->args[0] . '/nojs', array('attributes' => array('class' => 'button add-type-button ctools-use-modal ctools-modal-roomify-dashboard-modal-style')));
+      $link_text = 'add types';
+      if (variable_get('install_profile', '') == 'roomify_for_spaces') {
+        $link_text = 'add spaces';
+      }
+      $view->header['area']->options['content'] = l(t('@text', array('@text' => $link_text)), 'admin/bat/config/type/wizard/' . $view->args[0] . '/nojs', array('attributes' => array('class' => 'button add-type-button ctools-use-modal ctools-modal-roomify-dashboard-modal-style')));
     }
   }
 }
@@ -992,11 +996,11 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
         $form['types_container'][$i]['name'] = array(
           '#type' => 'textfield',
           '#size' => '20',
-          '#title' => t('Type Name'),
+          '#title' => t('Space Name'),
         );
         $form['types_container'][$i]['rooms'] = array(
           '#type' => 'textfield',
-          '#title' => t('Number of Rooms'),
+          '#title' => t('Number of Units'),
           '#size' => 2,
           '#element_validate' => array('element_validate_integer_positive'),
         );
@@ -1010,14 +1014,14 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
 
       $form['types_container']['add_type'] = array(
         '#type' => 'submit',
-        '#value' => t('add another type'),
+        '#value' => t('add another space'),
         '#submit' => array('roomify_property_wizard_form_add_one'),
       );
 
       if ($form_state['num_types'] > 1) {
         $form['types_container']['remove_name'] = array(
           '#type' => 'submit',
-          '#value' => t('remove a type'),
+          '#value' => t('remove a space'),
           '#submit' => array('roomify_property_wizard_form_remove_one'),
         );
       }
