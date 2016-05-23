@@ -269,6 +269,29 @@ class RoomifyProperty extends Entity {
     return $this->name;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function defaultUri() {
+    switch ($this->type) {
+      case 'casa_property':
+      case 'locanda_property':
+        return array('path' => 'listing/' . $this->property_id);
+
+      case 'single_day_activity_property':
+      case 'multi_day_activity_property':
+      case 'single_day_tour_property':
+      case 'multi_day_tour_property':
+        return array('path' => 'activity/' . $this->property_id);
+
+      case 'space_property':
+        return array('path' => 'location/' . $this->property_id);
+      
+      default:
+        return array('path' => 'property/' . $this->property_id);
+    }
+  }
+
 }
 
 /**
@@ -441,6 +464,15 @@ function roomify_property_type_save(RoomifyPropertyType $property_type) {
  */
 function roomify_property_type_delete(RoomifyPropertyType $bundle) {
   $bundle->delete();
+}
+
+/**
+ * URI callback for Roomify Properties.
+ */
+function roomify_property_uri(RoomifyProperty $property) {
+  return array(
+    'path' => 'property/' . $property->property_id,
+  );
 }
 
 /**
@@ -1477,4 +1509,23 @@ function roomify_property_entity_delete($entity, $type) {
       $bat_type->delete();
     }
   }
+}
+
+/**
+ * Menu title callback for showing individual entities.
+ */
+function roomify_property_page_title(RoomifyProperty $property) {
+  return $property->name;
+}
+
+/**
+ * Sets up content to show an individual property.
+ */
+function roomify_property_page_view($property, $view_mode = 'full') {
+  $controller = entity_get_controller('roomify_property');
+  $content = $controller->view(array($property->property_id => $property), $view_mode);
+
+  drupal_set_title($property->name);
+
+  return $content;
 }

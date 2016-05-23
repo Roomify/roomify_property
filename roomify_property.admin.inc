@@ -14,6 +14,9 @@ class RoomifyPropertyUIController extends EntityDefaultUIController {
    */
   public function hook_menu() {
     $items = parent::hook_menu();
+
+    $wildcard = isset($this->entityInfo['admin ui']['menu wildcard']) ? $this->entityInfo['admin ui']['menu wildcard'] : '%' . $this->entityType;
+
     $items[$this->path]['title'] = 'Roomify Properties';
 
     // Change the add page menu to multiple types of entities.
@@ -72,8 +75,18 @@ class RoomifyPropertyUIController extends EntityDefaultUIController {
         'file' => 'roomify_property.admin.inc',
         'file path' => drupal_get_path('module', $this->entityInfo['module']),
       );
-
     }
+
+    // Menu item for viewing property.
+    $items['property/' . $wildcard] = array(
+      'title callback' => 'roomify_property_page_title',
+      'title arguments' => array(1),
+      'page callback' => 'roomify_property_page_view',
+      'page arguments' => array(1),
+      'access callback' => 'roomify_property_access',
+      'access arguments' => array('view', 1),
+      'type' => MENU_CALLBACK,
+    );
 
     return $items;
   }
