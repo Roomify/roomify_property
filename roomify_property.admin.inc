@@ -209,7 +209,7 @@ function roomify_property_edit_form($form, &$form_state, $property) {
   // Type author information for administrators.
   $form['author'] = array(
     '#type' => 'fieldset',
-    '#access' => user_access('bypass bat_type entities access'),
+    '#access' => user_access('bypass roomify_property entities access'),
     '#title' => t('Authoring information'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
