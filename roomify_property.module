@@ -1291,14 +1291,11 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
   $options = array('query' => array('destination' => 'user'));
   if (!empty($form_state['#redirect'])) {
     $path = $form_state['#redirect'];
-    $form_state['ajax_commands'][] = ctools_ajax_command_redirect($path, 0, $options);
   }
   else {
-    if (!(arg(0) == 'group' && arg(2) == 'property' && arg(3) == 'add')) {
-      $path = 'admin/bat/config/property/manage/' . $property->property_id;
-      $form_state['ajax_commands'][] = ctools_ajax_command_redirect($path, 0, $options);
-    }
+    $path = 'admin/bat/config/property/manage/' . $property->property_id;
   }
+  $form_state['ajax_commands'][] = ctools_ajax_command_redirect($path, 0, $options);
 }
 
 /**
