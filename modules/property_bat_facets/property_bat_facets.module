@@ -274,58 +274,63 @@ function property_bat_facets_search_api_query_alter($query) {
             isset($params['bat_end_date']) &&
             !empty($params['bat_end_date'])) {
 
-
           $start_date = new DateTime($params['bat_start_date']);
           $end_date = new DateTime($params['bat_end_date']);
           // Remove a minute because BAT considers as included
           $end_date->sub(new DateInterval('PT1M'));
 
-          $event_type = $settings->settings['event_type'];
+          if ($start_date <= $end_date) {
+            $event_type = $settings->settings['event_type'];
 
-          $valid_states = $settings->settings['states'];
+            $valid_states = $settings->settings['states'];
 
-          $valid_states_names = array();
-          foreach ($valid_states as $state_id) {
-            $state = bat_event_load_state($state_id);
-            $valid_states_names[] = $state['machine_name'];
-          }
+            $valid_states_names = array();
+            foreach ($valid_states as $state_id) {
+              $state = bat_event_load_state($state_id);
+              $valid_states_names[] = $state['machine_name'];
+            }
 
-          $valid_properties_ids = array();
+            $valid_properties_ids = array();
 
-          $properties = entity_load('roomify_property', FALSE, array(), TRUE);
-          $properties_ids = roomify_property_ids();
-          foreach ($properties as $property) {
+            $properties = entity_load('roomify_property', FALSE, array(), TRUE);
+            $properties_ids = roomify_property_ids();
 
-            $types = field_get_items('roomify_property', $property, 'property_bat_type_reference');
+            foreach ($properties as $property) {
+              $types = field_get_items('roomify_property', $property, 'property_bat_type_reference');
 
-            if (!empty($types)) {
-              foreach ($types as $type_id) {
-                $type = bat_type_load($type_id['target_id']);
-                if (bat_event_get_matching_units($start_date, $end_date, $valid_states_names, $type->type_id, $event_type) !== FALSE) {
-                  // Include the property in the search.
-                  $valid_properties_ids[] = $property->property_id;
+              if (!empty($types)) {
+                foreach ($types as $type_id) {
+                  $type = bat_type_load($type_id['target_id']);
+
+                  if (bat_event_get_matching_units($start_date, $end_date, $valid_states_names, $type->type_id, $event_type) !== FALSE) {
+                    // Include the property in the search.
+                    $valid_properties_ids[] = $property->property_id;
+                  }
                 }
               }
             }
-          }
 
-          $context = array(
-            'types_before_search' => $properties_ids,
-            'start_date' => $start_date,
-            'end_date' => $end_date,
-            'event_type' => $event_type,
-            'valid_states' => $valid_states,
-          );
+            $context = array(
+              'types_before_search' => $properties_ids,
+              'start_date' => $start_date,
+              'end_date' => $end_date,
+              'event_type' => $event_type,
+              'valid_states' => $valid_states,
+            );
 
-          drupal_alter('property_bat_facets_search_results', $valid_properties_ids, $context);
+            drupal_alter('property_bat_facets_search_results', $valid_properties_ids, $context);
 
-          // If no types are available, zero out results.
-          if (empty($valid_properties_ids)) {
-            $query->condition($info['entity keys']['id'], 1, '<');
+            // If no types are available, zero out results.
+            if (empty($valid_properties_ids)) {
+              $query->condition($info['entity keys']['id'], 1, '<');
+            }
+            else {
+              // Limit the search API query to entity ids with availability.
+              $query->condition($info['entity keys']['id'], $valid_properties_ids, 'IN');
+            }
           }
           else {
-            // Limit the search API query to entity ids with availability.
-            $query->condition($info['entity keys']['id'], $valid_properties_ids, 'IN');
+            $query->condition($info['entity keys']['id'], 1, '<');
           }
         }
 
