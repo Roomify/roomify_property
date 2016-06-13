@@ -72,6 +72,12 @@ function roomify_property_schema() {
         'serialize' => TRUE,
         'description' => 'A serialized array of additional data.',
       ),
+      'priority' => array(
+        'description' => 'The priority of this property for sorting in the views.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'primary key' => array('property_id'),
     'indexes' => array(
@@ -143,4 +149,19 @@ function roomify_property_update_7001() {
   );
 
   db_add_field('roomify_properties', 'status', $field);
+}
+
+/**
+ * Add field priority.
+ */
+function roomify_property_update_7002() {
+  $field = array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0x00,
+    'size' => 'tiny',
+    'description' => 'The priority of this property for sorting in the views.',
+  );
+
+  db_add_field('roomify_properties', 'priority', $field);
 }
