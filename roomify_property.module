@@ -1024,6 +1024,68 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
           '#title' => t('Standard Duration'),
           '#required' => TRUE,
         );
+        // Opening Time informations.
+        $form['types_container'][$i]['opening_hours'] = array(
+          '#type' => 'container',
+          '#prefix' => '<h5 style="font-weight:bold;margin-bottom:5px">' . t('Opening Times') . '</h5>
+            <h6 class="descrition" style="margin-bottom:5px">' . t('Define when this space is open, you may edit and add more opening details after the creation.') . '</h6>',
+          '#attributes' => array(
+            'class' => array('container-inline'),
+          ),
+        );
+        $form['types_container'][$i]['opening_hours']['opening_hour'] = array(
+          '#type' => 'select',
+          '#title' => t('Opening Hour'),
+          '#options' => range(0, 23),
+          '#default_value' => '9',
+          '#required' => TRUE,
+        );
+        $form['types_container'][$i]['opening_hours']['opening_minute'] = array(
+          '#type' => 'select',
+          '#options' => array(
+            '00' => '00',
+            '15' => '15',
+            '30' => '30',
+            '45' => '45',
+          ),
+          '#default_value' => '00',
+          '#required' => TRUE,
+        );
+        $form['types_container'][$i]['opening_hours']['closing_hour'] = array(
+          '#type' => 'select',
+          '#title' => t('Closing Hour'),
+          '#options' => range(0, 23),
+          '#default_value' => '18',
+          '#required' => TRUE,
+        );
+        $form['types_container'][$i]['opening_hours']['closing_minute'] = array(
+          '#type' => 'select',
+          '#options' => array(
+            '00' => '00',
+            '15' => '15',
+            '30' => '30',
+            '45' => '45',
+          ),
+          '#default_value' => '00',
+          '#required' => TRUE,
+        );
+        // Day options to display in our checkboxes
+        $days = array(
+          0 => t('Sun'),
+          1 => t('Mon'),
+          2 => t('Tue'),
+          3 => t('Wed'),
+          4 => t('Thu'),
+          5 => t('Fri'),
+          6 => t('Sat'),
+        );
+        $form['types_container'][$i]['opening_hours']['days'] = array(
+          '#title' => t('Opening Days'),
+          '#type' => 'checkboxes',
+          '#options' => $days,
+          '#required' => TRUE,
+          '#default_value' => array(1,2,3,4,5),
+        );
       }
 
       $form['types_container']['add_type'] = array(
@@ -1224,7 +1286,7 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
 
       $type_ids = array();
       for ($i = 0; $i < count($type_values); $i++) {
-        if ($type_values[$i]['name'] != '' && $type_values[$i]['default_price'] != '' && $type_values[$i]['rooms'] != '' && $type_values[$i]['max_occupancy'] != '' && $type_values[$i]['standard_duration'] != '') {
+        if ($type_values[$i]['name'] != '' && $type_values[$i]['default_price'] != '' && $type_values[$i]['rooms'] != '' && $type_values[$i]['max_occupancy'] != '' && $type_values[$i]['standard_duration'] != '' && $type_values[$i]['opening_hours'] != '') {
           // Create type.
           $type = bat_type_create(
             array(
@@ -1240,6 +1302,18 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
           $type->space_default_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
           $type->space_standard_duration[LANGUAGE_NONE][0]['interval'] = $type_values[$i]['standard_duration']['interval'];
           $type->space_standard_duration[LANGUAGE_NONE][0]['period'] = $type_values[$i]['standard_duration']['period'];
+
+          $opening_time = $type_values[$i]['opening_hours']['opening_hour'] . $type_values[$i]['opening_hours']['opening_minute'];
+          $closing_time = $type_values[$i]['opening_hours']['closing_hour'] . $type_values[$i]['opening_hours']['closing_minute'];
+          foreach ($type_values[$i]['opening_hours']['days'] as $day => $enabled) {
+            if ($enabled != '0') {
+              $type->space_opening_time[LANGUAGE_NONE][] = array(
+                'day' => $day,
+                'starthours' => $opening_time,
+                'endhours' => $closing_time,
+              );
+            }
+          }
 
           $type->save();
 
