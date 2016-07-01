@@ -9,8 +9,8 @@ dependencies[] = facetapi
 dependencies[] = search_api
 dependencies[] = search_api_facetapi
 
-files[] = src/BatStateSearchAPIQuery.php
-files[] = src/BatStateWidget.php
+files[] = src/BatPropertyStateSearchAPIQuery.php
+files[] = src/BatPropertyStateWidget.php
 files[] = src/BatActivityStateSearchAPIQuery.php
 files[] = src/BatActivityStateWidget.php
 

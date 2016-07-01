@@ -1,6 +1,6 @@
 <?php
 
-class BatStateWidget extends FacetapiWidget {
+class BatPropertyStateWidget extends FacetapiWidget {
 
   /**
    * Execution callback.

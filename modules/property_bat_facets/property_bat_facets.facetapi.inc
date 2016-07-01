@@ -71,7 +71,7 @@ function property_bat_facets_facetapi_widgets() {
     'bat_state' => array(
       'handler' => array(
         'label' => t('Bat State'),
-        'class' => 'BatStateWidget',
+        'class' => 'BatPropertyStateWidget',
         'query types' => array('term'),
       ),
     ),
