@@ -32,7 +32,7 @@ function roomify_property_views_default_views() {
   $handler->display->display_options['header']['area']['field'] = 'area';
   $handler->display->display_options['header']['area']['empty'] = TRUE;
   $handler->display->display_options['header']['area']['content'] = '<a class="button add-type-button ctools-use-modal ctools-modal-roomify-dashboard-modal-style" href="/admin/bat/config/type/wizard/!1/nojs">add types</a>';
-  $handler->display->display_options['header']['area']['format'] = 'filtered_text';
+  $handler->display->display_options['header']['area']['format'] = 'full_html';
   $handler->display->display_options['header']['area']['tokenize'] = TRUE;
   /* Relationship: Entity Reference: Referencing entity */
   $handler->display->display_options['relationships']['reverse_property_bat_type_reference_roomify_property']['id'] = 'reverse_property_bat_type_reference_roomify_property';
