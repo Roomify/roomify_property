@@ -2,8 +2,11 @@
   display: none;
 }
 .form-type-textfield.form-item-property-name {
-  margin-left: 40px;
+  margin: 0 25px;
   vertical-align: middle;
+}
+.form-type-textfield.form-item-property-name input {
+  max-width: 100%;
 }
 .form-type-textfield.form-item-property-name label {
   padding-top: 5px;
