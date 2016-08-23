@@ -1021,7 +1021,7 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
         $form['types_container'][$i]['standard_duration'] = array(
           '#type' => 'interval',
           '#size' => '10',
-          '#title' => t('Standard Duration'),
+          '#title' => t('Minimum Duration'),
           '#required' => TRUE,
         );
         // Opening Time informations.
