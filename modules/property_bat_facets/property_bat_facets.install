@@ -3,3 +3,20 @@
 /**
  * @file
  */
+
+/**
+ * Match the type with the biggest max_capacity field.
+ */
+function property_bat_facets_update_7001() {
+  $types = entity_load('bat_type', FALSE, array(), TRUE);
+  foreach ($types as $type) {
+    if ($type->type == 'home' || $type->type == 'room') {
+      if ($max_capacity = field_get_items('bat_type', $type, 'field_st_max_capacity')) {
+        $max_properties_capacity = variable_get('roomify_max_property_type_capacity', '1');
+        if ($max_capacity[0]['value'] >= $max_properties_capacity) {
+          variable_set('roomify_max_property_type_capacity', $max_capacity[0]['value']);
+        }
+      }
+    }
+  }
+}

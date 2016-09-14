@@ -204,9 +204,10 @@ function property_bat_facets_availability_validate($form, &$form_state) {
       $segment .= '/location/' . $location_filter;
     }
     if ($group_size) {
-      // Need this for Ranges.
-      // Filter search from group_size to group_size x 2.
-      $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $group_size * 2 . ']';
+      $max_group_size = variable_get('roomify_max_property_type_capacity', '100');
+      // Filter search from group_size to the maximum capacity of the biggest
+      // type in the site.
+      $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $max_group_size . ']';
     }
 
     drupal_goto('availability-search' . $segment, array('query' => array(
@@ -246,7 +247,10 @@ function property_bat_facets_availability_submit($form, &$form_state) {
   }
 
   if ($group_size) {
-    $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $group_size * 2 . ']';
+    $max_group_size = variable_get('roomify_max_property_type_capacity', '100');
+    // Filter search from group_size to the maximum capacity of the biggest
+    // type in the site.
+    $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $max_group_size . ']';
   }
 
   $form_state['redirect'] = array('availability-search' . $segment, array('query' => array('bat_start_date' => $form_state['values']['arrival'], 'bat_end_date' => $form_state['values']['departure'], 'location' => $form_state['values']['location'], 'group_size' => $form_state['values']['group_size'])));
@@ -537,9 +541,9 @@ function property_bat_activity_facets_availability_validate($form, &$form_state)
       $segment .= '/location/' . $location_filter;
     }
     if ($group_size) {
-      // Need this for Ranges.
-      // Filter search from group_size to group_size x 2.
-      $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $group_size * 2 . ']';
+      // Filter search from group_size to 100 (A high number to match all
+      // the properties available that have a capacity >= group_size).
+      $segment .= '/capacity/' . '[' . $group_size . ' TO 100]';
     }
 
     drupal_goto('activities-search' . $segment, array('query' => array(
@@ -571,7 +575,9 @@ function property_bat_activity_facets_availability_submit($form, &$form_state) {
   }
 
   if ($group_size) {
-    $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $group_size * 2 . ']';
+    // Filter search from group_size to 100 (A high number to match all
+    // the properties available that have a capacity >= group_size).
+    $segment .= '/capacity/' . '[' . $group_size . ' TO 100]';
   }
 
   $form_state['redirect'] = array('activities-search' . $segment, array('query' => array('bat_activity_date' => $form_state['values']['arrival'], 'location' => $form_state['values']['location'], 'group_size' => $form_state['values']['group_size'])));
