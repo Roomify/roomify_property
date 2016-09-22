@@ -995,7 +995,7 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
 
         $form['types_container'][$i]['name'] = array(
           '#type' => 'textfield',
-          '#size' => '20',
+          '#size' => 20,
           '#title' => t('Space Name'),
           '#required' => TRUE,
         );
@@ -1003,6 +1003,7 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
           '#type' => 'textfield',
           '#title' => t('Number of Units'),
           '#size' => 2,
+          '#required' => TRUE,
           '#element_validate' => array('element_validate_integer_positive'),
         );
         $form['types_container'][$i]['default_price'] = array(
@@ -1020,7 +1021,7 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
         );
         $form['types_container'][$i]['standard_duration'] = array(
           '#type' => 'interval',
-          '#size' => '10',
+          '#size' => 10,
           '#title' => t('Minimum Duration'),
           '#required' => TRUE,
         );
@@ -1286,7 +1287,7 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
 
       $type_ids = array();
       for ($i = 0; $i < count($type_values); $i++) {
-        if ($type_values[$i]['name'] != '' && $type_values[$i]['default_price'] != '' && $type_values[$i]['rooms'] != '' && $type_values[$i]['max_occupancy'] != '' && $type_values[$i]['standard_duration'] != '' && $type_values[$i]['opening_hours'] != '') {
+        if ($type_values[$i]['name'] != '' && $type_values[$i]['rooms'] != '' && $type_values[$i]['max_occupancy'] != '' && $type_values[$i]['standard_duration'] != '' && $type_values[$i]['opening_hours'] != '') {
           // Create type.
           $type = bat_type_create(
             array(
@@ -1298,7 +1299,7 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
           );
 
           $type->space_capacity[LANGUAGE_NONE][0]['value'] = $type_values[$i]['max_occupancy'];
-          $type->space_default_price[LANGUAGE_NONE][0]['amount'] = $type_values[$i]['default_price'] * 100;
+          $type->space_default_price[LANGUAGE_NONE][0]['amount'] = ($type_values[$i]['default_price'] != '') ? $type_values[$i]['default_price'] * 100 : 0;
           $type->space_default_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
           $type->space_standard_duration[LANGUAGE_NONE][0]['interval'] = $type_values[$i]['standard_duration']['interval'];
           $type->space_standard_duration[LANGUAGE_NONE][0]['period'] = $type_values[$i]['standard_duration']['period'];
