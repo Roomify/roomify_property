@@ -207,6 +207,9 @@ function property_bat_facets_availability_validate($form, &$form_state) {
       $max_group_size = variable_get('roomify_max_property_type_capacity', '100');
       // Filter search from group_size to the maximum capacity of the biggest
       // type in the site.
+      if ($group_size >= $max_group_size) {
+        $group_size = $max_group_size;
+      }
       $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $max_group_size . ']';
     }
 
@@ -250,6 +253,9 @@ function property_bat_facets_availability_submit($form, &$form_state) {
     $max_group_size = variable_get('roomify_max_property_type_capacity', '100');
     // Filter search from group_size to the maximum capacity of the biggest
     // type in the site.
+    if ($group_size >= $max_group_size) {
+      $group_size = $max_group_size;
+    }
     $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $max_group_size . ']';
   }
 
