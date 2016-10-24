@@ -91,7 +91,122 @@ function roomify_property_views_default_views() {
 
   /* Display: Block */
   $handler = $view->new_display('block', 'Block', 'block_1');
-
   $views['property_types'] = $view;
+
+  $view = new view();
+  $view->name = 'property_revisions';
+  $view->description = '';
+  $view->tag = 'default';
+  $view->base_table = 'roomify_properties_revision';
+  $view->human_name = 'Property revisions';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'Property revisions';
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['access']['perm'] = 'bypass roomify_property entities access';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '50';
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['columns'] = array(
+    'revision_id' => 'revision_id',
+    'revision_timestamp' => 'revision_timestamp',
+    'name_1' => 'name_1',
+    'name' => 'name',
+    'log' => 'log',
+  );
+  $handler->display->display_options['style_options']['default'] = 'revision_id';
+  $handler->display->display_options['style_options']['info'] = array(
+    'revision_id' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'revision_timestamp' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'name_1' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'name' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'log' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+  );
+  /* Relationship: Property revision: User */
+  $handler->display->display_options['relationships']['revision_uid']['id'] = 'revision_uid';
+  $handler->display->display_options['relationships']['revision_uid']['table'] = 'roomify_properties_revision';
+  $handler->display->display_options['relationships']['revision_uid']['field'] = 'revision_uid';
+  /* Field: Property revision: Revision ID */
+  $handler->display->display_options['fields']['revision_id']['id'] = 'revision_id';
+  $handler->display->display_options['fields']['revision_id']['table'] = 'roomify_properties_revision';
+  $handler->display->display_options['fields']['revision_id']['field'] = 'revision_id';
+  $handler->display->display_options['fields']['revision_id']['label'] = 'Revision';
+  /* Field: Property revision: Revision date */
+  $handler->display->display_options['fields']['revision_timestamp']['id'] = 'revision_timestamp';
+  $handler->display->display_options['fields']['revision_timestamp']['table'] = 'roomify_properties_revision';
+  $handler->display->display_options['fields']['revision_timestamp']['field'] = 'revision_timestamp';
+  $handler->display->display_options['fields']['revision_timestamp']['label'] = 'Created on';
+  $handler->display->display_options['fields']['revision_timestamp']['date_format'] = 'bat';
+  $handler->display->display_options['fields']['revision_timestamp']['second_date_format'] = 'bat_daily';
+  /* Field: User: Name */
+  $handler->display->display_options['fields']['name_1']['id'] = 'name_1';
+  $handler->display->display_options['fields']['name_1']['table'] = 'users';
+  $handler->display->display_options['fields']['name_1']['field'] = 'name';
+  $handler->display->display_options['fields']['name_1']['relationship'] = 'revision_uid';
+  $handler->display->display_options['fields']['name_1']['label'] = 'Created by';
+  /* Field: Property revision: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'roomify_properties_revision';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  /* Field: Property revision: Log message */
+  $handler->display->display_options['fields']['log']['id'] = 'log';
+  $handler->display->display_options['fields']['log']['table'] = 'roomify_properties_revision';
+  $handler->display->display_options['fields']['log']['field'] = 'log';
+  /* Contextual filter: Property revision: Property ID */
+  $handler->display->display_options['arguments']['property_id']['id'] = 'property_id';
+  $handler->display->display_options['arguments']['property_id']['table'] = 'roomify_properties_revision';
+  $handler->display->display_options['arguments']['property_id']['field'] = 'property_id';
+  $handler->display->display_options['arguments']['property_id']['default_action'] = 'empty';
+  $handler->display->display_options['arguments']['property_id']['default_argument_type'] = 'fixed';
+  $handler->display->display_options['arguments']['property_id']['summary']['number_of_records'] = '0';
+  $handler->display->display_options['arguments']['property_id']['summary']['format'] = 'default_summary';
+  $handler->display->display_options['arguments']['property_id']['summary_options']['items_per_page'] = '25';
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page');
+  $handler->display->display_options['path'] = 'admin/bat/config/property/manage/%/revisions';
+  $handler->display->display_options['menu']['type'] = 'tab';
+  $handler->display->display_options['menu']['title'] = 'Revisions';
+  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
+  $views['property_revisions'] = $view;
+
   return $views;
 }

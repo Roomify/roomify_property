@@ -250,6 +250,33 @@ function roomify_property_edit_form($form, &$form_state, $property) {
     '#default_value' => !empty($property->date) ? $property->date : '',
   );
 
+  $form['revisions'] = array(
+    '#type' => 'fieldset',
+    '#access' => user_access('bypass roomify_property entities access'),
+    '#title' => t('Revision information'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'additional_settings',
+    '#attributes' => array(
+      'class' => array('type-form-revisions'),
+    ),
+    '#weight' => 95,
+  );
+  if (!empty($property->property_id)) {
+    $form['revisions']['revision'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Create new revision on update'),
+      '#description' => t('If an update log message is entered, a revision will be created even if this is unchecked.'),
+      '#default_value' => 0,
+    );
+  }
+  $form['revisions']['log'] = array(
+    '#type' => 'textarea',
+    '#title' => !empty($property->property_id) ? t('Update log message') : t('Creation log message'),
+    '#rows' => 4,
+    '#description' => t('Provide an explanation of the changes you are making. This will provide a meaningful history of changes to this property.'),
+  );
+
   $form['actions'] = array(
     '#type' => 'actions',
     '#tree' => FALSE,
@@ -321,6 +348,14 @@ function roomify_property_edit_form_submit($form, &$form_state) {
 
   $property->created = !empty($property->date) ? strtotime($property->date) : REQUEST_TIME;
   $property->changed = time();
+
+  // Trigger a new revision if the checkbox was enabled or a log message supplied.
+  if (!empty($form_state['values']['revision']) ||
+      !empty($form['change_history']['revision']['#default_value']) ||
+      !empty($form_state['values']['log'])) {
+    $property->revision = TRUE;
+    $property->log = $form_state['values']['log'];
+  }
 
   if (isset($property->author_name)) {
     if ($account = user_load_by_name($property->author_name)) {

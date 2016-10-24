@@ -20,6 +20,13 @@ function roomify_property_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
+      'revision_id' => array(
+        'description' => 'The current {roomify_properties_revision}.revision_id version identifier.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'type' => array(
         'description' => 'The {property_type}.type of this Property.',
         'type' => 'varchar',
@@ -83,6 +90,51 @@ function roomify_property_schema() {
     'indexes' => array(
       'type' => array('type'),
     ),
+  );
+
+  $schema['roomify_properties_revision'] = array(
+    'description' => 'The base table for Properties.',
+    'fields' => array(
+      'property_id' => array(
+        'description' => 'Unique Property id (entity id).',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'revision_id' => array(
+        'description' => 'The current {roomify_properties_revision}.revision_id version identifier.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'The name of this property for this revision',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'revision_uid' => array(
+        'description' => 'The {users}.uid that created this Property at this revision.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'log' => array(
+        'description' => 'The log entry explaining the changes in this version.',
+        'type' => 'text',
+        'not null' => TRUE,
+        'size' => 'big',
+      ),
+      'revision_timestamp' => array(
+        'description' => 'The Unix timestamp when the Property was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('revision_id'),
   );
 
   $schema['roomify_property_types'] = array(
@@ -164,4 +216,21 @@ function roomify_property_update_7002() {
   );
 
   db_add_field('roomify_properties', 'priority', $field);
+}
+
+/**
+ * Create table 'roomify_properties_revision'.
+ */
+function roomify_property_update_7103() {
+  db_create_table('roomify_properties_revision', drupal_get_schema_unprocessed('roomify_property', 'roomify_properties_revision'));
+
+  $field = array(
+    'description' => 'The current {roomify_properties_revision}.revision_id version identifier.',
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+  );
+
+  db_add_field('roomify_properties', 'revision_id', $field);
 }
