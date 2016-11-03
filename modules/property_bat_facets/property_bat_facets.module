@@ -15,6 +15,17 @@ function property_bat_facets_ctools_plugin_api($module, $api) {
 }
 
 /**
+ * Implements hook_module_implements_alter().
+ */
+function property_bat_facets_module_implements_alter(&$implementations, $hook) {
+  if ($hook == 'search_api_query_alter' && isset($implementations['property_bat_facets'])) {
+    $group = $implementations['property_bat_facets'];
+    unset($implementations['property_bat_facets']);
+    $implementations['property_bat_facets'] = $group;
+  }
+}
+
+/**
  * Implements hook_facetapi_facet_info_alter().
  */
 function property_bat_facets_facetapi_facet_info_alter(array &$facet_info, array $searcher_info) {
@@ -274,12 +285,14 @@ function property_bat_facets_search_api_query_alter($query) {
 
     // Only modify the query if this query is against roomify_property.
     if ($info['base table'] = 'roomify_properties') {
-      // Get this widget's settings.
+      $query->sort('property_id', 'DESC');
 
+      // Get this widget's settings.
       $index = $query->getIndex();
       $facets = facetapi_get_enabled_facets('search_api@' . $index->machine_name);
       $adapter = facetapi_adapter_load('search_api@' . $index->machine_name);
       $realm = facetapi_realm_load('block');
+
       if (isset($facets['property_bat_type_reference'])) {
         $settings = $adapter->getFacetSettings($facets['property_bat_type_reference'], $realm);
 
