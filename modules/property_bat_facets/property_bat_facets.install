@@ -5,9 +5,23 @@
  */
 
 /**
- * Match the type with the biggest max_capacity field.
+ * Implementation of hook_install().
+ */
+function property_bat_facets_install() {
+  _roomify_property_match_biggest_bat_type();
+}
+
+/**
+ * Set a variable with the biggest bat type.
  */
 function property_bat_facets_update_7001() {
+  _roomify_property_match_biggest_bat_type();
+}
+
+/**
+ * Match the type with the biggest max_capacity field.
+ */
+function _roomify_property_match_biggest_bat_type() {
   $types = entity_load('bat_type', FALSE, array(), TRUE);
   foreach ($types as $type) {
     if ($type->type == 'home' || $type->type == 'room') {

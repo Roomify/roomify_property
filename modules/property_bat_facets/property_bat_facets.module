@@ -176,7 +176,8 @@ function property_bat_facets_availability($form, &$form_state) {
     1 => t('1 guest'),
   );
 
-  for ($i = 2; $i <= 15; $i++) {
+  $max_group_size = variable_get('roomify_max_property_type_capacity') ? variable_get('roomify_max_property_type_capacity') : 15;
+  for ($i = 2; $i <= $max_group_size; $i++) {
     $group_options[$i] = $i . t(' guests');
   }
 
@@ -523,7 +524,9 @@ function property_bat_activity_facets_availability($form, &$form_state) {
     1 => t('1 guest'),
   );
 
-  for ($i = 2; $i <= 15; $i++) {
+  $max_group_size = variable_get('roomify_max_property_type_capacity') ? variable_get('roomify_max_property_type_capacity') : 15;
+
+  for ($i = 2; $i <= $max_group_size; $i++) {
     $group_options[$i] = $i . t(' guests');
   }
 
