@@ -15,6 +15,7 @@ class RoomifyPropertyUIController extends EntityDefaultUIController {
   public function hook_menu() {
     $items = parent::hook_menu();
 
+    $id_count = count(explode('/', $this->path));
     $wildcard = isset($this->entityInfo['admin ui']['menu wildcard']) ? $this->entityInfo['admin ui']['menu wildcard'] : '%' . $this->entityType;
 
     $items[$this->path]['title'] = 'Roomify Properties';
@@ -26,8 +27,39 @@ class RoomifyPropertyUIController extends EntityDefaultUIController {
     $items[$this->path . '/add']['access callback'] = 'roomify_property_add_access';
     unset($items[$this->path . '/add']['title callback']);
 
+    $items[$this->path . '/manage/' . $wildcard . '/revision/%/view'] = array(
+      'title' => 'View Revision',
+      'page callback' => 'roomify_property_revision_view',
+      'page arguments' => array($id_count + 1, $id_count + 3),
+      'access callback' => 'roomify_property_access_revision',
+      'access arguments' => array('view', $id_count + 1, $id_count + 3),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => -10,
+      'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+      'file' => 'roomify_property.admin.inc',
+      'file path' => drupal_get_path('module', $this->entityInfo['module']),
+    );
+
+    $items[$this->path . '/manage/' . $wildcard . '/revision/%/revert'] = array(
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('roomify_property_revision_revert_confirm', $id_count + 1, $id_count + 3),
+      'access callback' => 'roomify_property_access_revision',
+      'access arguments' => array('revert', $id_count + 1, $id_count + 3),
+      'file' => 'roomify_property.admin.inc',
+      'file path' => drupal_get_path('module', $this->entityInfo['module']),
+    );
+
+    $items[$this->path . '/manage/' . $wildcard . '/revision/%/delete'] = array(
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('roomify_property_revision_delete_confirm', $id_count + 1, $id_count + 3),
+      'access callback' => 'roomify_property_access_revision',
+      'access arguments' => array('delete', $id_count + 1, $id_count + 3),
+      'file' => 'roomify_property.admin.inc',
+      'file path' => drupal_get_path('module', $this->entityInfo['module']),
+    );
+
     // Add property type specific types menu item.
-    $items[$this->path . '/manage/%roomify_property/types'] = array(
+    $items[$this->path . '/manage/' . $wildcard . '/types'] = array(
       'title callback' => 'roomify_property_types_title_callback',
       'title arguments' => array(5),
       'page callback' => 'roomify_property_types_wrapper',
@@ -40,7 +72,7 @@ class RoomifyPropertyUIController extends EntityDefaultUIController {
     );
 
     // Add property type specific calendar menu item.
-    $items[$this->path . '/manage/%roomify_property/calendar/availability'] = array(
+    $items[$this->path . '/manage/' . $wildcard . '/calendar/availability'] = array(
       'title' => 'Manage availability',
       'page callback' => 'roomify_property_calendar_wrapper',
       'page arguments' => array(5, 'availability'),
@@ -52,7 +84,7 @@ class RoomifyPropertyUIController extends EntityDefaultUIController {
     );
 
     // Add property type specific calendar menu item.
-    $items[$this->path . '/manage/%roomify_property/calendar/pricing'] = array(
+    $items[$this->path . '/manage/' . $wildcard . '/calendar/pricing'] = array(
       'title' => 'Manage pricing',
       'page callback' => 'roomify_property_calendar_wrapper',
       'page arguments' => array(5, 'pricing'),
@@ -451,4 +483,57 @@ function roomify_property_set_breadcrumb() {
   );
 
   drupal_set_breadcrumb($breadcrumb);
+}
+
+/**
+ * @param $property
+ * @param $revision
+ */
+function roomify_property_revision_view($property, $revision) {
+  return entity_view('roomify_property', array(roomify_property_load_revision($revision)));
+}
+
+/**
+ * @param $property
+ * @param $revision
+ */
+function roomify_property_revision_revert_confirm($form, $form_state, $property, $revision) {
+  $property_revision = roomify_property_load_revision($revision);
+  $form['#property_revision'] = $property_revision;
+
+  return confirm_form($form, t('Are you sure you want to revert to the revision from %revision-date?', array('%revision-date' => format_date($property_revision->revision_timestamp))), 'admin/bat/config/property/manage/' . $type_revision->property_id . '/revisions', '', t('Revert'), t('Cancel'));
+}
+
+/**
+ * Form submission handler for bat_type_revision_revert_confirm().
+ */
+function roomify_property_revision_revert_confirm_submit($form, &$form_state) {
+  $property_revision = $form['#property_revision'];
+
+  $property_revision->revision = TRUE;
+  $property_revision->default_revision = TRUE;
+  $property_revision->save();
+
+  $form_state['redirect'] = 'admin/bat/config/property/manage/' . $property_revision->property_id . '/revisions';
+}
+
+/**
+ * @param $property
+ * @param $revision
+ */
+function roomify_property_revision_delete_confirm($form, $form_state, $property, $revision) {
+  $property_revision = roomify_property_load_revision($revision);
+  $form['#property_revision'] = $property_revision;
+
+  return confirm_form($form, t('Are you sure you want to delete the revision from %revision-date?', array('%revision-date' => format_date($property_revision->revision_timestamp))), 'admin/bat/config/types/manage/' . $property_revision->property_id . '/revisions', t('This action cannot be undone.'), t('Delete'), t('Cancel'));
+}
+
+/**
+ * Form submission handler for roomify_property_revision_delete_confirm().
+ */
+function roomify_property_revision_delete_confirm_submit($form, &$form_state) {
+  $property_revision = $form['#property_revision'];
+  entity_revision_delete('bat_type', $property_revision->revision_id);
+
+  $form_state['redirect'] = 'admin/bat/config/property/manage/' . $property_revision->property_id . '/revisions';
 }

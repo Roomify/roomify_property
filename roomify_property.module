@@ -44,6 +44,7 @@ function roomify_property_entity_info() {
     'entity keys' => array(
       'id' => 'property_id',
       'bundle' => 'type',
+      'revision' => 'revision_id',
       'label' => 'name',
     ),
     // Bundles are defined by the property bundles below.
@@ -183,6 +184,33 @@ function roomify_property_views_api() {
     'api' => 3,
     'path' => drupal_get_path('module', 'roomify_property') . '/views',
   );
+}
+
+/**
+ * @param $op
+ * @param RoomifyProperty $property
+ * @param $revision_id
+ * @param $account
+ */
+function roomify_property_access_revision($op, $property, $revision_id, $account = NULL) {
+  if ($revision_property = roomify_property_load_revision($revision_id)) {
+    if ($property->property_id != $revision_property->property_id) {
+      return FALSE;
+    }
+    else {
+      if ($op == 'view') {
+        return user_access('bypass roomify_property entities access');
+      }
+      elseif ($op == 'revert') {
+        return user_access('bypass roomify_property entities access');
+      }
+      elseif ($op == 'delete') {
+        return user_access('bypass roomify_property entities access');
+      }
+    }
+  }
+
+  return FALSE;
 }
 
 /**
@@ -372,29 +400,12 @@ class RoomifyPropertyController extends EntityAPIController {
   public function save($entity) {
     global $user;
 
+    $entity->revision_uid = $user->uid;
+    $entity->revision_timestamp = REQUEST_TIME;
+
     parent::save($entity);
 
-    if (!empty($entity->revision)) {
-      $revision_id = db_insert('roomify_properties_revision')
-                      ->useDefaults(array('revision_id'))
-                      ->fields(array(
-                        'property_id' => $entity->property_id,
-                        'name' => $entity->name,
-                        'revision_uid' => $user->uid,
-                        'log' => $entity->log,
-                        'revision_timestamp' => REQUEST_TIME,
-                      ))
-                      ->execute();
-
-      $entity->revision_id = $revision_id;
-
-      db_update('roomify_properties')
-        ->condition('property_id', $entity->property_id)
-        ->fields(array(
-          'revision_id' => $entity->revision_id,
-        ))
-        ->execute();
-    }
+    $entity->revision = FALSE;    
   }
 
   /**
@@ -523,6 +534,13 @@ function roomify_property_uri(RoomifyProperty $property) {
 function roomify_property_load($property_id, $reset = FALSE) {
   $properties = roomify_property_load_multiple(array($property_id), array(), $reset);
   return reset($properties);
+}
+
+/**
+ * @param $revision_id
+ */
+function roomify_property_load_revision($revision_id) {
+  return entity_revision_load('roomify_property', $revision_id);
 }
 
 /**

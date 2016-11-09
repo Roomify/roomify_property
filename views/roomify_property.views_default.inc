@@ -188,6 +188,12 @@ function roomify_property_views_default_views() {
   $handler->display->display_options['fields']['log']['id'] = 'log';
   $handler->display->display_options['fields']['log']['table'] = 'roomify_properties_revision';
   $handler->display->display_options['fields']['log']['field'] = 'log';
+  /* Field: Property revision: Operations links */
+  $handler->display->display_options['fields']['operations']['id'] = 'operations';
+  $handler->display->display_options['fields']['operations']['table'] = 'roomify_properties_revision';
+  $handler->display->display_options['fields']['operations']['field'] = 'operations';
+  $handler->display->display_options['fields']['operations']['label'] = '';
+  $handler->display->display_options['fields']['operations']['element_label_colon'] = FALSE;
   /* Contextual filter: Property revision: Property ID */
   $handler->display->display_options['arguments']['property_id']['id'] = 'property_id';
   $handler->display->display_options['arguments']['property_id']['table'] = 'roomify_properties_revision';

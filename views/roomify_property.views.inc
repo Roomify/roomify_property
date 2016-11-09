@@ -141,4 +141,12 @@ function roomify_property_views_data_alter(&$data) {
       'handler' => 'views_handler_filter_date',
     ),
   );
+
+  $data['roomify_properties_revision']['operations'] = array(
+    'field' => array(
+      'title' => t('Operations links'),
+      'help' => t('Display all operations available for this property revision.'),
+      'handler' => 'roomify_property_handler_revision_operations_field',
+    ),
+  );
 }

@@ -12,3 +12,4 @@ files[] = roomify_property_type.admin.inc
 files[] = views/roomify_property.views.inc
 files[] = views/roomify_property_handler_delete_link_field.inc
 files[] = views/roomify_property_handler_edit_link_field.inc
+files[] = views/roomify_property_handler_revision_operations_field.inc
