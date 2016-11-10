@@ -169,6 +169,18 @@ function roomify_property_permission() {
       'title' => t('Unpublish own property'),
       'description' => t('Allows users to set own property as suspended.'),
     ),
+    'view roomify_property revisions' => array(
+      'title' => t('View property revisions'),
+      'description' => t('Allows users to view property revisions.'),
+    ),
+    'revert roomify_property revisions' => array(
+      'title' => t('Revert property revisions'),
+      'description' => t('Allows users to revert property revisions.'),
+    ),
+    'delete roomify_property revisions' => array(
+      'title' => t('Delete property revisions'),
+      'description' => t('Allows users to delete property revisions.'),
+    ),
   );
 
   $permissions += bat_entity_access_permissions('roomify_property');
@@ -187,25 +199,39 @@ function roomify_property_views_api() {
 }
 
 /**
- * @param $op
+ * Determines whether the given user has access to a property revision.
+ *
+ * @param string $op
+ *   The operation being performed. One of 'view', 'revert', 'delete'.
  * @param RoomifyProperty $property
  * @param $revision_id
- * @param $account
+ * @param object $account
+ *   The user to check for. Leave it to NULL to check for the global user.
+ *
+ * @return boolean
+ *   Whether access is allowed or not.
  */
 function roomify_property_access_revision($op, $property, $revision_id, $account = NULL) {
+  global $user;
+  $account = isset($account) ? $account : $user;
+
   if ($revision_property = roomify_property_load_revision($revision_id)) {
     if ($property->property_id != $revision_property->property_id) {
       return FALSE;
     }
     else {
+      if (user_access('bypass roomify_property entities access')) {
+        return TRUE;
+      }
+
       if ($op == 'view') {
-        return user_access('bypass roomify_property entities access');
+        return user_access('view roomify_property revisions');
       }
       elseif ($op == 'revert') {
-        return user_access('bypass roomify_property entities access');
+        return user_access('revert roomify_property revisions');
       }
       elseif ($op == 'delete') {
-        return user_access('bypass roomify_property entities access');
+        return user_access('delete roomify_property revisions');
       }
     }
   }

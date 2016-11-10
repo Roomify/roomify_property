@@ -45,9 +45,6 @@ class RoomifyPropertyUIController extends EntityDefaultUIController {
       'page arguments' => array($id_count + 1, $id_count + 3),
       'access callback' => 'roomify_property_access_revision',
       'access arguments' => array('view', $id_count + 1, $id_count + 3),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => -10,
-      'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
       'file' => 'roomify_property.admin.inc',
       'file path' => drupal_get_path('module', $this->entityInfo['module']),
     );
@@ -502,6 +499,8 @@ function roomify_property_set_breadcrumb() {
  * @param $revision
  */
 function roomify_property_revision_view($property, $revision) {
+  drupal_set_title(t('Revision of %title from %date', array('%title' => $property->name, '%date' => format_date($property->revision_timestamp))), PASS_THROUGH);
+
   return entity_view('roomify_property', array(roomify_property_load_revision($revision)));
 }
 
