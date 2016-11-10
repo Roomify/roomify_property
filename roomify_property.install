@@ -234,3 +234,30 @@ function roomify_property_update_7103() {
 
   db_add_field('roomify_properties', 'revision_id', $field);
 }
+
+/**
+ * Add revisions for all existing properties.
+ */
+function roomify_property_update_7104() {
+  db_update('roomify_properties')
+    ->expression('revision_id', 'property_id')
+    ->execute();
+
+  $properties = db_select('roomify_properties', 'p')
+                  ->fields('p', array('property_id', 'name', 'uid', 'created'))
+                  ->execute()
+                  ->fetchAll();
+
+  foreach ($properties as $property) {
+    db_insert('roomify_properties_revision')
+      ->fields(array(
+        'property_id' => $property->property_id,
+        'revision_id' => $property->property_id,
+        'name' => $property->name,
+        'revision_uid' => $property->uid,
+        'revision_timestamp' => $property->created,
+        'log' => '',
+      ))
+      ->execute();
+  }
+}
