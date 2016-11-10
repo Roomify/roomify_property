@@ -544,6 +544,19 @@ function roomify_property_load_revision($revision_id) {
 }
 
 /**
+ * @param RoomifyProperty $property
+ */
+function roomify_property_revision_list($property) {
+  $revisions = array();
+  $result = db_query('SELECT r.revision_id, r.name, r.log, r.revision_uid, n.revision_id AS current_vid, r.revision_timestamp, u.name FROM {roomify_properties_revision} r LEFT JOIN {roomify_properties} n ON n.revision_id = r.revision_id INNER JOIN {users} u ON u.uid = r.revision_uid WHERE r.property_id = :property_id ORDER BY r.revision_id DESC', array(':property_id' => $property->property_id));
+  foreach ($result as $revision) {
+    $revisions[$revision->revision_id] = $revision;
+  }
+
+  return $revisions;
+}
+
+/**
  * Loads multiple properties based on certain conditions.
  *
  * @param array $property_ids
@@ -1598,8 +1611,10 @@ function roomify_property_form_roomify_property_operation_delete_validate($form,
   $types = array();
 
   $property = $form_state['roomify_property'];
-  foreach ($property->property_bat_type_reference[LANGUAGE_NONE] as $type) {
-    $types[] = $type['target_id'];
+  if (isset($property->property_bat_type_reference[LANGUAGE_NONE])) {
+    foreach ($property->property_bat_type_reference[LANGUAGE_NONE] as $type) {
+      $types[] = $type['target_id'];
+    }
   }
 
   if (!empty($types)) {
@@ -1651,9 +1666,11 @@ function roomify_property_types_title_callback($property) {
  */
 function roomify_property_entity_delete($entity, $type) {
   if ($type == 'roomify_property') {
-    foreach ($entity->property_bat_type_reference[LANGUAGE_NONE] as $type) {
-      $bat_type = bat_type_load($type['target_id']);
-      $bat_type->delete();
+    if (isset($entity->property_bat_type_reference[LANGUAGE_NONE])) {
+      foreach ($entity->property_bat_type_reference[LANGUAGE_NONE] as $type) {
+        $bat_type = bat_type_load($type['target_id']);
+        $bat_type->delete();
+      }
     }
   }
 }

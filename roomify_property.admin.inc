@@ -27,6 +27,18 @@ class RoomifyPropertyUIController extends EntityDefaultUIController {
     $items[$this->path . '/add']['access callback'] = 'roomify_property_add_access';
     unset($items[$this->path . '/add']['title callback']);
 
+    if (module_exists('diff')) {
+      $items[$this->path . '/manage/' . $wildcard . '/revisions/view'] = array(
+        'title' => '',
+        'page callback' => 'roomify_property_compare_revisions',
+        'page arguments' => array($id_count + 1, $id_count + 4, $id_count + 5),
+        'access callback' => TRUE,
+        'type' => MENU_LOCAL_TASK,
+        'file' => 'roomify_property.diff.inc',
+        'file path' => drupal_get_path('module', $this->entityInfo['module']),
+      );
+    }
+
     $items[$this->path . '/manage/' . $wildcard . '/revision/%/view'] = array(
       'title' => 'View Revision',
       'page callback' => 'roomify_property_revision_view',
