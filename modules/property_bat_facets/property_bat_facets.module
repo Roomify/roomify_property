@@ -285,7 +285,7 @@ function property_bat_facets_search_api_query_alter($query) {
     $info = entity_get_info($query->getIndex()->getEntityType());
 
     // Only modify the query if this query is against roomify_property.
-    if ($info['base table'] = 'roomify_properties') {
+    if ($info['base table'] == 'roomify_properties') {
       $query->sort('property_id', 'DESC');
 
       // Get this widget's settings.
