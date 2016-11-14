@@ -69,7 +69,7 @@ function roomify_property_views_default_views() {
   $handler->display->display_options['fields']['nothing']['label'] = 'Edit';
   $handler->display->display_options['fields']['nothing']['alter']['text'] = 'Edit';
   $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/bat/config/types/type/[type_id]/edit?destination=admin/bat/config/property/manage/!1/types';
+  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/bat/config/types/manage/[type_id]/edit?destination=admin/bat/config/property/manage/!1/types';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
   $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
@@ -77,7 +77,7 @@ function roomify_property_views_default_views() {
   $handler->display->display_options['fields']['nothing_1']['label'] = 'Units';
   $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'Units';
   $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/bat/config/types/type/[type_id]/units?destination=admin/bat/config/property/manage/!1/types';
+  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/bat/config/types/manage/[type_id]/units?destination=admin/bat/config/property/manage/!1/types';
   /* Contextual filter: Roomify Property: Roomify property ID */
   $handler->display->display_options['arguments']['property_id']['id'] = 'property_id';
   $handler->display->display_options['arguments']['property_id']['table'] = 'roomify_properties';
