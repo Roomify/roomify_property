@@ -25,7 +25,7 @@ class roomify_property_handler_revision_operations_field extends views_handler_f
     $revision_id = $this->get_value($values, 'revision_id');
 
     $property = roomify_property_load_revision($revision_id);
-    if (entity_revision_is_default('bat_type', $property)) {
+    if (entity_revision_is_default('roomify_property', $property)) {
       return '<b>' . t('This is the published revision.') . '</b>';
     }
     else {

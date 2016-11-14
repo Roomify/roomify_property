@@ -126,7 +126,7 @@ function roomify_property_views_default_views() {
   $handler->display->display_options['style_options']['info'] = array(
     'revision_id' => array(
       'sortable' => 1,
-      'default_sort_order' => 'asc',
+      'default_sort_order' => 'desc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
