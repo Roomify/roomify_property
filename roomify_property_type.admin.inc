@@ -69,6 +69,20 @@ function roomify_property_type_form($form, &$form_state, $property_type, $op = '
     '#weight' => 99,
   );
 
+  $form['publishing_options'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Publishing options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'additional_settings',
+  );
+
+  $form['publishing_options']['revision'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Create new revision'),
+    '#default_value' => (isset($type_bundle->data['revision'])) ? $type_bundle->data['revision'] : 0,
+  );
+
   $form['actions'] = array(
     '#type' => 'actions',
     '#tree' => FALSE,
@@ -98,7 +112,10 @@ function roomify_property_type_form_validate(&$form, &$form_state) {
  * Form API submit callback for the property type form.
  */
 function roomify_property_type_form_submit(&$form, &$form_state) {
- $property_type = entity_ui_controller('roomify_property_type')->entityFormSubmitBuildEntity($form, $form_state);
+  $property_type = entity_ui_controller('roomify_property_type')->entityFormSubmitBuildEntity($form, $form_state);
+
+  $property_type->data['revision'] = $form_state['values']['revision'];
+
   // Save and go back.
   $property_type->save();
 

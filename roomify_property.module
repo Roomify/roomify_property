@@ -587,6 +587,45 @@ function roomify_property_revision_list($property) {
 }
 
 /**
+ * Retrieve a list of revisions with a revision_id greater than the current.
+ *
+ * @param int $property_id
+ *   The property id to retrieve.
+ *
+ * @return array
+ *   An array of revisions (latest first), each containing revision_id, name and
+ *   bundle.
+ */
+function roomify_property_get_pending_revisions($property_id) {
+  $sql = "SELECT r.revision_id, r.name, n.type FROM {roomify_properties} n INNER JOIN {roomify_properties_revision} r ON n.property_id = r.property_id WHERE (r.revision_id > n.revision_id AND n.property_id = :property_id) ORDER BY r.revision_id DESC";
+  $result = db_query($sql, array(
+    ':property_id' => $property_id)
+  );
+  $revisions = array();
+  foreach ($result as $revision) {
+    $revisions[$revision->revision_id] = $revision;
+  }
+  return $revisions;
+}
+
+/**
+ * Get the id of the current revision that the supplied property is pointing to.
+ *
+ * Used in cases where the property object wasn't fully loaded or was loaded
+ * with a different revision.
+ *
+ * @param int $property_id
+ *   The id of the property whose current revision id is to be returned.
+ *
+ * @return int
+ *   A single number being the current revision id (revision_id).
+ */
+function roomify_property_get_current_property_revision_id($property_id) {
+  $result = db_query("SELECT revision_id FROM {roomify_properties} WHERE property_id = :property_id", array(':property_id' => $property_id));
+  return $result->fetchField();
+}
+
+/**
  * Loads multiple properties based on certain conditions.
  *
  * @param array $property_ids
@@ -1589,6 +1628,60 @@ function roomify_property_entity_presave($entity, $type) {
         }
       }
     }
+  }
+}
+
+/**
+ * @param $op
+ * @param $property
+ */
+function roomify_property_revisioning_event($op, $property) {
+  switch ($op) {
+    case 'post update':
+      if (module_exists('rules')) {
+        rules_invoke_event('roomify_property_revisioning_post_update', $property);
+      }
+      break;
+
+    case 'pre publish':
+      if (module_exists('rules')) {
+        rules_invoke_event('roomify_property_revisioning_pre_publish', $property);
+      }
+      break;
+
+    case 'post publish':
+      if (module_exists('rules')) {
+        rules_invoke_event('roomify_property_revisioning_post_publish', $property);
+      }
+      break;
+
+    case 'post unpublish':
+      if (module_exists('rules')) {
+        rules_invoke_event('roomify_property_revisioning_post_unpublish', $property);
+      }
+      break;
+
+    case 'pre revert':
+      if (module_exists('rules')) {
+        rules_invoke_event('roomify_property_revisioning_pre_revert', $property);
+      }
+      break;
+
+    case 'post revert':
+      if (module_exists('rules')) {
+        rules_invoke_event('roomify_property_revisioning_post_revert', $property);
+      }
+      break;
+
+    case 'pre delete':
+      if (module_exists('rules')) {
+        rules_invoke_event('roomify_property_revisioning_pre_delete', $property);
+      }
+
+    case 'post delete':
+      if (module_exists('rules')) {
+        rules_invoke_event('roomify_property_revisioning_post_delete', $property);
+      }
   }
 }
 

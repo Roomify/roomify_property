@@ -303,20 +303,71 @@ function roomify_property_edit_form($form, &$form_state, $property) {
     ),
     '#weight' => 95,
   );
-  if (!empty($property->property_id)) {
-    $form['revisions']['revision'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Create new revision on update'),
-      '#description' => t('If an update log message is entered, a revision will be created even if this is unchecked.'),
-      '#default_value' => 0,
+
+  if (module_exists('revisioning')) {
+    $form['revisions']['log'] = array(
+      '#type' => 'textarea',
+      '#title' => !empty($property->property_id) ? t('Update log message') : t('Creation log message'),
+      '#rows' => 4,
+      '#description' => t('Provide an explanation of the changes you are making. This will provide a meaningful history of changes to this property.'),
+    );
+
+    $options = array();
+    if (!empty($property->property_id)) {
+      $options[REVISIONING_NO_REVISION] = t('Modify current revision, no moderation');
+    }
+    $options[REVISIONING_NEW_REVISION_NO_MODERATION]  = t('Create new revision, no moderation');
+    $options[REVISIONING_NEW_REVISION_WITH_MODERATION] = t('Create new revision and moderate');
+
+    $form['revisions']['revision_operation'] = array(
+      '#title' => t('Revision creation and moderation options'),
+      '#description' => t('Moderation means that the new revision is not publicly visible until approved by someone with the appropriate permissions.'),
+      '#type' => 'radios',
+      '#options' => $options,
+      '#default_value' => isset($property->property_id)
+        ? REVISIONING_NEW_REVISION_WITH_MODERATION
+        : REVISIONING_NEW_REVISION_NO_MODERATION,
+    );
+
+    if (variable_get('revisioning_no_moderation_by_default', FALSE)) {
+      $form['revisions']['revision_operation']['#default_value'] = REVISIONING_NEW_REVISION_NO_MODERATION;
+    }
+
+    if (!empty($property->property_id)) {
+      $revision_count = db_query("SELECT COUNT(revision_id) FROM {roomify_properties_revision} WHERE property_id = :property_id AND revision_id > :revision_id",
+        array(
+          ':revision_id' => $property->revision_id,
+          ':property_id' => $property->property_id,
+        )
+      )->fetchField();
+
+      if ($revision_count == 1) {
+        drupal_set_message(t('Please note there is one revision more recent than the one you are about to edit.'), 'warning');
+      }
+      elseif ($revision_count > 1) {
+        drupal_set_message(t('Please note there are @count revisions more recent than the one you are about to edit.',
+          array('@count' => $revision_count)), 'warning');
+      }
+    }
+  }
+  else {
+    if (!empty($property->property_id)) {
+      $property_type = roomify_property_type_load($property->type);
+
+      $form['revisions']['revision'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Create new revision on update'),
+        '#description' => t('If an update log message is entered, a revision will be created even if this is unchecked.'),
+        '#default_value' => (isset($property_type->data['revision'])) ? $property_type->data['revision'] : 0,
+      );
+    }
+    $form['revisions']['log'] = array(
+      '#type' => 'textarea',
+      '#title' => !empty($property->property_id) ? t('Update log message') : t('Creation log message'),
+      '#rows' => 4,
+      '#description' => t('Provide an explanation of the changes you are making. This will provide a meaningful history of changes to this property.'),
     );
   }
-  $form['revisions']['log'] = array(
-    '#type' => 'textarea',
-    '#title' => !empty($property->property_id) ? t('Update log message') : t('Creation log message'),
-    '#rows' => 4,
-    '#description' => t('Provide an explanation of the changes you are making. This will provide a meaningful history of changes to this property.'),
-  );
 
   $form['actions'] = array(
     '#type' => 'actions',
@@ -390,12 +441,22 @@ function roomify_property_edit_form_submit($form, &$form_state) {
   $property->created = !empty($property->date) ? strtotime($property->date) : REQUEST_TIME;
   $property->changed = time();
 
-  // Trigger a new revision if the checkbox was enabled or a log message supplied.
-  if (!empty($form_state['values']['revision']) ||
-      !empty($form['change_history']['revision']['#default_value']) ||
-      !empty($form_state['values']['log'])) {
-    $property->revision = TRUE;
-    $property->log = $form_state['values']['log'];
+  if (module_exists('revisioning')) {
+    if (isset($property->revision_operation)) {
+      $property->revision = ($property->revision_operation > REVISIONING_NO_REVISION);
+      if ($property->revision_operation == REVISIONING_NEW_REVISION_WITH_MODERATION) {
+        $property->default_revision = FALSE;
+      }
+    }
+  }
+  else {
+    // Trigger a new revision if the checkbox was enabled or a log message supplied.
+    if (!empty($form_state['values']['revision']) ||
+        !empty($form['change_history']['revision']['#default_value']) ||
+        !empty($form_state['values']['log'])) {
+      $property->revision = TRUE;
+      $property->log = $form_state['values']['log'];
+    }
   }
 
   if (isset($property->author_name)) {
@@ -516,7 +577,7 @@ function roomify_property_revision_revert_confirm($form, $form_state, $property,
 }
 
 /**
- * Form submission handler for bat_type_revision_revert_confirm().
+ * Form submission handler for roomify_property_revision_revert_confirm().
  */
 function roomify_property_revision_revert_confirm_submit($form, &$form_state) {
   $property_revision = $form['#property_revision'];
@@ -544,7 +605,7 @@ function roomify_property_revision_delete_confirm($form, $form_state, $property,
  */
 function roomify_property_revision_delete_confirm_submit($form, &$form_state) {
   $property_revision = $form['#property_revision'];
-  entity_revision_delete('bat_type', $property_revision->revision_id);
+  entity_revision_delete('roomify_property', $property_revision->revision_id);
 
   $form_state['redirect'] = 'admin/bat/config/property/manage/' . $property_revision->property_id . '/revisions';
 }
