@@ -1,6 +1,11 @@
 <?php
 
+/**
+ * @file
+ */
+
 class BatActivityStateSearchAPIQuery implements FacetapiQueryTypeInterface {
+
   /**
    * Implements FacetapiQueryTypeInterface::getType().
    */

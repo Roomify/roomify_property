@@ -8,19 +8,19 @@
 
 class roomify_property_handler_revision_operations_field extends views_handler_field {
 
-  function construct() {
+  public function construct() {
     parent::construct();
 
     $this->additional_fields['property_id'] = 'property_id';
     $this->additional_fields['revision_id'] = 'revision_id';
   }
 
-  function query() {
+  public function query() {
     $this->ensure_my_table();
     $this->add_additional_fields();
   }
 
-  function render($values) {
+  public function render($values) {
     $property_id = $this->get_value($values, 'property_id');
     $revision_id = $this->get_value($values, 'revision_id');
 

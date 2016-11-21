@@ -147,7 +147,7 @@ function roomify_property_diff_get_previous_vid($property_revisions, $vid) {
  *   RoomifyProperty for comparison which will be displayed on the left side.
  * @param object $new_property
  *   RoomifyProperty for comparison which will be displayed on the right side.
- * @param boolean $state
+ * @param bool $state
  *   The state to render for the diff.
  */
 function roomify_property_diff_body_rows($old_property, $new_property, $state = 'raw') {
