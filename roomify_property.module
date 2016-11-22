@@ -208,7 +208,7 @@ function roomify_property_views_api() {
  * @param object $account
  *   The user to check for. Leave it to NULL to check for the global user.
  *
- * @return boolean
+ * @return bool
  *   Whether access is allowed or not.
  */
 function roomify_property_access_revision($op, $property, $revision_id, $account = NULL) {
@@ -310,7 +310,7 @@ function roomify_property_manage_types_access($property) {
 }
 
 /**
- * The class used for property entities
+ * The class used for property entities.
  */
 class RoomifyProperty extends Entity {
 
@@ -398,14 +398,20 @@ class RoomifyPropertyMetadataController extends EntityDefaultMetadataController 
 }
 
 /**
- * The Controller for RoomifyProperty entities
+ * The Controller for RoomifyProperty entities.
  */
 class RoomifyPropertyController extends EntityAPIController {
 
+  /**
+   *
+   */
   public function __construct($entityType) {
     parent::__construct($entityType);
   }
 
+  /**
+   *
+   */
   public function create(array $values = array()) {
     $values += array(
       'property_id' => '',
@@ -435,7 +441,7 @@ class RoomifyPropertyController extends EntityAPIController {
 
     parent::save($entity);
 
-    $entity->revision = FALSE;    
+    $entity->revision = FALSE;
   }
 
   /**
@@ -450,14 +456,20 @@ class RoomifyPropertyController extends EntityAPIController {
 }
 
 /**
- * The Controller for RoomifyPropertyType entities
+ * The Controller for RoomifyPropertyType entities.
  */
 class RoomifyPropertyTypeController extends EntityAPIControllerExportable {
 
+  /**
+   *
+   */
   public function __construct($entityType) {
     parent::__construct($entityType);
   }
 
+  /**
+   *
+   */
   public function create(array $values = array()) {
     $values += array(
       'id' => '',
@@ -472,6 +484,9 @@ class RoomifyPropertyTypeController extends EntityAPIControllerExportable {
 
 }
 
+/**
+ *
+ */
 function roomify_property_type_access() {
   return TRUE;
 }
@@ -556,6 +571,7 @@ function roomify_property_uri(RoomifyProperty $property) {
  *   Integer specifying the property id.
  * @param bool $reset
  *   A boolean indicating whether the internal cache should be reset.
+ *
  * @return RoomifyProperty|false
  *   A fully-loaded $property object or FALSE if it cannot be loaded.
  *
@@ -1099,6 +1115,7 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
       }
 
       break;
+
     case 'space_property':
       $form['#attached']['css'][] = drupal_get_path('module', 'roomify_property') . '/css/property_type_space.css';
       // Because we have many fields with the same values, we have to set
@@ -1710,7 +1727,7 @@ function roomify_property_form_bat_type_edit_form_delete_submit($form, &$form_st
 /**
  * Implements hook_form_FORM_ID_alter().
  *
- * FORM_ID = roomify_property_operation_form
+ * FORM_ID = roomify_property_operation_form.
  */
 function roomify_property_form_roomify_property_operation_form_alter(&$form, &$form_state) {
   if (module_exists('bat_booking')) {

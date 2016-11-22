@@ -376,7 +376,7 @@ function property_bat_facets_search_api_query_alter($query) {
         if (isset($params['bat_activity_date']) && !empty($params['bat_activity_date'])) {
           $start_date = new DateTime(check_plain($params['bat_activity_date']));
           $end_date = clone($start_date);
-          // Remove a minute because BAT considers as included
+          // Remove a minute because BAT considers as included.
           $end_date->sub(new DateInterval('PT1M'));
 
           $event_types = array(
@@ -567,11 +567,12 @@ function property_bat_activity_facets_availability_validate($form, &$form_state)
       $segment .= '/capacity/' . '[' . $group_size . ' TO 100]';
     }
 
-    drupal_goto('activities-search' . $segment, array('query' => array(
-      'location' => $location,
-      'group_size' => $group_size,
-    )));
-
+    drupal_goto('activities-search' . $segment, array(
+      'query' => array(
+        'location' => $location,
+        'group_size' => $group_size,
+      ),
+    ));
   }
 }
 
@@ -579,7 +580,6 @@ function property_bat_activity_facets_availability_validate($form, &$form_state)
  * Submit handler for property_bat_facets_availability form.
  */
 function property_bat_activity_facets_availability_submit($form, &$form_state) {
-
   // Set location to "All" if not selected.
   $location = $form_state['values']['location'];
   if (!$location) {

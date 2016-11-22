@@ -171,10 +171,12 @@ class RoomifyPropertyUIController extends EntityDefaultUIController {
 
     // Add a row for the exportable status.
     if (!empty($this->entityInfo['exportable'])) {
-      $row[] = array('data' => array(
-        '#theme' => 'entity_status',
-        '#status' => $entity->{$this->statusKey},
-      ));
+      $row[] = array(
+        'data' => array(
+          '#theme' => 'entity_status',
+          '#status' => $entity->{$this->statusKey},
+        ),
+      );
     }
     // In case this is a bundle, we add links to the field ui tabs.
     $field_ui = !empty($this->entityInfo['bundle of']) && entity_type_is_fieldable($this->entityInfo['bundle of']) && module_exists('field_ui');

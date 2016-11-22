@@ -13,4 +13,3 @@ files[] = src/BatPropertyStateSearchAPIQuery.php
 files[] = src/BatPropertyStateWidget.php
 files[] = src/BatActivityStateSearchAPIQuery.php
 files[] = src/BatActivityStateWidget.php
-

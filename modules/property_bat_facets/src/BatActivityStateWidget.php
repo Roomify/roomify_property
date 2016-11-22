@@ -13,7 +13,7 @@ class BatActivityStateWidget extends FacetapiWidget {
   /**
    * Overrides FacetapiWidget::settingsForm().
    */
-  function settingsForm(&$form, &$form_state) {
+  public function settingsForm(&$form, &$form_state) {
     parent::settingsForm($form, $form_state);
     $settings = $this->settings->settings;
 

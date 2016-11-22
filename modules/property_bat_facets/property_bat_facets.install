@@ -5,7 +5,7 @@
  */
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function property_bat_facets_install() {
   _roomify_property_match_biggest_bat_type();

@@ -104,7 +104,7 @@ function roomify_property_compare_revisions($property, $old_revision_id, $new_re
  * @param int $vid
  *   Version ID to look for.
  *
- * @return boolean|integer
+ * @return bool|int
  *   Returns FALSE if $vid is the last entry.
  */
 function roomify_property_diff_get_next_vid($property_revisions, $vid) {
@@ -123,10 +123,10 @@ function roomify_property_diff_get_next_vid($property_revisions, $vid) {
  *
  * @param array $property_revisions
  *   Array of property revision IDs in descending order.
- * @param integer $vid
+ * @param int $vid
  *   Version ID to look for.
  *
- * @return boolean|integer
+ * @return bool|int
  *   Returns FALSE if $vid is the first entry.
  */
 function roomify_property_diff_get_previous_vid($property_revisions, $vid) {
