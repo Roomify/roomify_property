@@ -342,7 +342,7 @@ class RoomifyProperty extends Entity {
 
       case 'space_property':
         return array('path' => 'location/' . $this->property_id);
-      
+
       default:
         return array('path' => 'property/' . $this->property_id);
     }
@@ -351,7 +351,7 @@ class RoomifyProperty extends Entity {
 }
 
 /**
- * The class used for property type entities
+ * The class used for property type entities.
  */
 class RoomifyPropertyType extends Entity {
 
@@ -376,7 +376,7 @@ class RoomifyPropertyType extends Entity {
 }
 
 /**
- * The MetadataController for RoomifyProperty entities
+ * The MetadataController for RoomifyProperty entities.
  */
 class RoomifyPropertyMetadataController extends EntityDefaultMetadataController {
 
@@ -615,8 +615,8 @@ function roomify_property_revision_list($property) {
 function roomify_property_get_pending_revisions($property_id) {
   $sql = "SELECT r.revision_id, r.name, n.type FROM {roomify_properties} n INNER JOIN {roomify_properties_revision} r ON n.property_id = r.property_id WHERE (r.revision_id > n.revision_id AND n.property_id = :property_id) ORDER BY r.revision_id DESC";
   $result = db_query($sql, array(
-    ':property_id' => $property_id)
-  );
+    ':property_id' => $property_id,
+  ));
   $revisions = array();
   foreach ($result as $revision) {
     $revisions[$revision->revision_id] = $revision;
@@ -813,7 +813,7 @@ function roomify_property_views_pre_render(&$view) {
 }
 
 /**
- * Callback for Add property wizard
+ * Callback for Add property wizard.
  */
 function roomify_property_wizard($ajax) {
   if ($ajax) {
@@ -1235,7 +1235,7 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
           '#type' => 'checkboxes',
           '#options' => $days,
           '#required' => TRUE,
-          '#default_value' => array(1,2,3,4,5),
+          '#default_value' => array(1, 2, 3, 4, 5),
         );
       }
 
@@ -1705,7 +1705,7 @@ function roomify_property_revisioning_event($op, $property) {
 /**
  * Implements hook_form_FORM_ID_alter().
  *
- * FORM_ID = bat_type_edit_form
+ * FORM_ID = bat_type_edit_form.
  */
 function roomify_property_form_bat_type_edit_form_alter(&$form, &$form_state) {
   if (isset($form['actions']['delete'])) {

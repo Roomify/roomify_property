@@ -244,9 +244,9 @@ function roomify_property_update_7104() {
     ->execute();
 
   $properties = db_select('roomify_properties', 'p')
-                  ->fields('p', array('property_id', 'name', 'uid', 'created'))
-                  ->execute()
-                  ->fetchAll();
+    ->fields('p', array('property_id', 'name', 'uid', 'created'))
+    ->execute()
+    ->fetchAll();
 
   foreach ($properties as $property) {
     db_insert('roomify_properties_revision')

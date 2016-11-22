@@ -1,6 +1,10 @@
 <?php
 
 /**
+ * @file
+ */
+
+/**
  * Implements hook_views_data_alter().
  */
 function roomify_property_views_data_alter(&$data) {
@@ -35,7 +39,7 @@ function roomify_property_views_data_alter(&$data) {
     'roomify_properties' => array(
       'left_field' => 'revision_id',
       'field' => 'revision_id',
-    )
+    ),
   );
 
   $data['roomify_properties_revision']['table']['default_relationship'] = array(
@@ -120,7 +124,7 @@ function roomify_property_views_data_alter(&$data) {
     'help' => t('The log message entered when the revision was created.'),
     'field' => array(
       'handler' => 'views_handler_field_xss',
-     ),
+    ),
     'filter' => array(
       'handler' => 'views_handler_filter_string',
     ),
