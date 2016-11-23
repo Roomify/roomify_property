@@ -214,6 +214,7 @@ function property_bat_facets_availability_validate($form, &$form_state) {
 
       $segment .= '/location/' . $location_filter;
     }
+
     if ($group_size) {
       $max_group_size = variable_get('roomify_max_property_type_capacity', '100');
       // Filter search from group_size to the maximum capacity of the biggest
@@ -224,11 +225,12 @@ function property_bat_facets_availability_validate($form, &$form_state) {
       $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $max_group_size . ']';
     }
 
-    drupal_goto('availability-search' . $segment, array('query' => array(
-      'location' => $location,
-      'group_size' => $group_size,
-    )));
-
+    drupal_goto('availability-search' . $segment, array(
+      'query' => array(
+        'location' => $location,
+        'group_size' => $group_size,
+      ),
+    ));
   }
 
   if (isset($form_state['values']['arrival']) && !isset($form_state['values']['departure'])) {
@@ -564,7 +566,7 @@ function property_bat_activity_facets_availability_validate($form, &$form_state)
     if ($group_size) {
       // Filter search from group_size to 100 (A high number to match all
       // the properties available that have a capacity >= group_size).
-      $segment .= '/capacity/' . '[' . $group_size . ' TO 100]';
+      $segment .= '/capacity/[' . $group_size . ' TO 100]';
     }
 
     drupal_goto('activities-search' . $segment, array(
@@ -598,7 +600,7 @@ function property_bat_activity_facets_availability_submit($form, &$form_state) {
   if ($group_size) {
     // Filter search from group_size to 100 (A high number to match all
     // the properties available that have a capacity >= group_size).
-    $segment .= '/capacity/' . '[' . $group_size . ' TO 100]';
+    $segment .= '/capacity/[' . $group_size . ' TO 100]';
   }
 
   $form_state['redirect'] = array('activities-search' . $segment, array('query' => array('bat_activity_date' => $form_state['values']['arrival'], 'location' => $form_state['values']['location'], 'group_size' => $form_state['values']['group_size'])));

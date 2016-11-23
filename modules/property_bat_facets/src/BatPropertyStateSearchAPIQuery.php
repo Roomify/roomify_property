@@ -4,6 +4,9 @@
  * @file
  */
 
+/**
+ *
+ */
 class BatPropertyStateSearchAPIQuery implements FacetapiQueryTypeInterface {
 
   /**

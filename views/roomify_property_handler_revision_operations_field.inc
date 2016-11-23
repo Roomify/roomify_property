@@ -6,6 +6,9 @@
  * under a single field providing a more flexible way to present them in a view.
  */
 
+/**
+ *
+ */
 class roomify_property_handler_revision_operations_field extends views_handler_field {
 
   /**

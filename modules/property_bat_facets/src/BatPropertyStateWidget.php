@@ -4,6 +4,9 @@
  * @file
  */
 
+/**
+ *
+ */
 class BatPropertyStateWidget extends FacetapiWidget {
 
   /**

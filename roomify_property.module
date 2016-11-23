@@ -1220,7 +1220,7 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
           '#default_value' => '00',
           '#required' => TRUE,
         );
-        // Day options to display in our checkboxes
+        // Day options to display in our checkboxes.
         $days = array(
           0 => t('Sun'),
           1 => t('Mon'),
