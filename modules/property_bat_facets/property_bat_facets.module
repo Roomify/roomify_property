@@ -258,11 +258,12 @@ function property_bat_facets_availability_validate($form, &$form_state) {
       $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $max_group_size . ']';
     }
 
-    drupal_goto('availability-search' . $segment, array('query' => array(
-      $segment_location => $location,
-      'group_size' => $group_size,
-    )));
-
+    drupal_goto('availability-search' . $segment, array(
+      'query' => array(
+        $segment_location => $location,
+        'group_size' => $group_size,
+      ),
+    ));
   }
 
   if (isset($form_state['values']['arrival']) && !isset($form_state['values']['departure'])) {
@@ -522,7 +523,6 @@ function property_bat_activity_facets_availability($form, &$form_state) {
 
   $future_limit = variable_get('roomify_accommodation_booking_future_limit', 31104000);
 
-  
   if (variable_get('roomify_availability_search_form_location', 'area') == 'area') {
     $options = array(0 => t('All Areas'));
     $vid = taxonomy_vocabulary_machine_name_load('location')->vid;
@@ -635,11 +635,12 @@ function property_bat_activity_facets_availability_validate($form, &$form_state)
       $segment .= '/capacity/[' . $group_size . ' TO 100]';
     }
 
-    drupal_goto('activities-search' . $segment, array('query' => array(
-      $segment_location => $location,
-      'group_size' => $group_size,
-    )));
-
+    drupal_goto('activities-search' . $segment, array(
+      'query' => array(
+        $segment_location => $location,
+        'group_size' => $group_size,
+      ),
+    ));
   }
 }
 
