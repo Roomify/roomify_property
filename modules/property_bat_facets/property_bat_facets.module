@@ -103,12 +103,38 @@ function property_bat_facets_availability($form, &$form_state) {
     $options[$term->tid] = $term->name;
   }
 
+  if (variable_get('roomify_availability_search_form_location', 'area') == 'area') {
+    $options = array(0 => t('All Areas'));
+    $vid = taxonomy_vocabulary_machine_name_load('location')->vid;
+    $terms = taxonomy_get_tree($vid);
+    foreach ($terms as $term) {
+      $options[$term->tid] = $term->name;
+    }
+  }
+  elseif (variable_get('roomify_availability_search_form_location', 'area') == 'area_type') {
+    $options = array(0 => t('Areas types'));
+    $vid = taxonomy_vocabulary_machine_name_load('area_type')->vid;
+    $terms = taxonomy_get_tree($vid);
+    foreach ($terms as $term) {
+      $options[$term->tid] = $term->name;
+    }
+  }
+
+  $default_value_location = 0;
+
+  if (isset($params['location'])) {
+    $default_value_location = check_plain($params['location']);
+  }
+  if (isset($params['field_sp_area_type'])) {
+    $default_value_location = check_plain($params['field_sp_area_type']);
+  }
+
   $form['container']['location'] = array(
     '#type' => 'select',
-    '#title' => t('Area'),
+    '#title' => t('Location'),
     '#options' => $options,
     '#chosen' => TRUE,
-    '#default_value' => isset($params['location']) ? check_plain($params['location']) : 0,
+    '#default_value' => $default_value_location,
   );
 
   // Specify the default datepicker parameters (see date_popup_element_info())
@@ -207,12 +233,19 @@ function property_bat_facets_availability_validate($form, &$form_state) {
     $location = $form_state['values']['location'];
     $segment = '';
 
+    if (variable_get('roomify_availability_search_form_location', 'area') == 'area_type') {
+      $segment_location = 'field_sp_area_type';
+    }
+    else {
+      $segment_location = 'location';
+    }
+
     if ($location) {
       $area_term = taxonomy_term_load($location);
       $location_filter  = str_replace(' ', '-', $area_term->name);
       $location_filter  = str_replace("'", '', $location_filter);
 
-      $segment .= '/location/' . $location_filter;
+      $segment .= '/' . $segment_location . '/' . $location_filter;
     }
 
     if ($group_size) {
@@ -225,12 +258,11 @@ function property_bat_facets_availability_validate($form, &$form_state) {
       $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $max_group_size . ']';
     }
 
-    drupal_goto('availability-search' . $segment, array(
-      'query' => array(
-        'location' => $location,
-        'group_size' => $group_size,
-      ),
-    ));
+    drupal_goto('availability-search' . $segment, array('query' => array(
+      $segment_location => $location,
+      'group_size' => $group_size,
+    )));
+
   }
 
   if (isset($form_state['values']['arrival']) && !isset($form_state['values']['departure'])) {
@@ -253,13 +285,20 @@ function property_bat_facets_availability_submit($form, &$form_state) {
     $location = 'All';
   }
 
+  if (variable_get('roomify_availability_search_form_location', 'area') == 'area_type') {
+    $segment_location = 'field_sp_area_type';
+  }
+  else {
+    $segment_location = 'location';
+  }
+
   $group_size = $form_state['values']['group_size'];
   $segment = '';
 
   if ($location != 'All') {
     $area_term = taxonomy_term_load($location);
     $location_filter  = str_replace(' ', '-', $area_term->name);
-    $segment .= '/location/' . $location_filter;
+    $segment .= '/' . $segment_location . '/' . $location_filter;
   }
 
   if ($group_size) {
@@ -272,7 +311,7 @@ function property_bat_facets_availability_submit($form, &$form_state) {
     $segment .= '/capacity/' . '[' . $group_size . ' TO ' . $max_group_size . ']';
   }
 
-  $form_state['redirect'] = array('availability-search' . $segment, array('query' => array('bat_start_date' => $form_state['values']['arrival'], 'bat_end_date' => $form_state['values']['departure'], 'location' => $form_state['values']['location'], 'group_size' => $form_state['values']['group_size'])));
+  $form_state['redirect'] = array('availability-search' . $segment, array('query' => array('bat_start_date' => $form_state['values']['arrival'], 'bat_end_date' => $form_state['values']['departure'], $segment_location => $form_state['values']['location'], 'group_size' => $form_state['values']['group_size'])));
 }
 
 /**
@@ -483,19 +522,39 @@ function property_bat_activity_facets_availability($form, &$form_state) {
 
   $future_limit = variable_get('roomify_accommodation_booking_future_limit', 31104000);
 
-  $options = array(0 => t('All Areas'));
-  $vid = taxonomy_vocabulary_machine_name_load('location')->vid;
-  $terms = taxonomy_get_tree($vid);
-  foreach ($terms as $term) {
-    $options[$term->tid] = $term->name;
+  
+  if (variable_get('roomify_availability_search_form_location', 'area') == 'area') {
+    $options = array(0 => t('All Areas'));
+    $vid = taxonomy_vocabulary_machine_name_load('location')->vid;
+    $terms = taxonomy_get_tree($vid);
+    foreach ($terms as $term) {
+      $options[$term->tid] = $term->name;
+    }
+  }
+  elseif (variable_get('roomify_availability_search_form_location', 'area') == 'area_type') {
+    $options = array(0 => t('Areas types'));
+    $vid = taxonomy_vocabulary_machine_name_load('area_type')->vid;
+    $terms = taxonomy_get_tree($vid);
+    foreach ($terms as $term) {
+      $options[$term->tid] = $term->name;
+    }
+  }
+
+  $default_value_location = 0;
+
+  if (isset($params['location'])) {
+    $default_value_location = check_plain($params['location']);
+  }
+  if (isset($params['field_sp_area_type'])) {
+    $default_value_location = check_plain($params['field_sp_area_type']);
   }
 
   $form['container']['location'] = array(
     '#type' => 'select',
-    '#title' => t('Area'),
+    '#title' => t('Location'),
     '#options' => $options,
     '#chosen' => TRUE,
-    '#default_value' => isset($params['location']) ? $params['location'] : 0,
+    '#default_value' => $default_value_location,
   );
 
   // Specify the default datepicker parameters (see date_popup_element_info())
@@ -558,10 +617,17 @@ function property_bat_activity_facets_availability_validate($form, &$form_state)
     $location = $form_state['values']['location'];
     $segment = '';
 
+    if (variable_get('roomify_availability_search_form_location', 'area') == 'area_type') {
+      $segment_location = 'field_sp_area_type';
+    }
+    else {
+      $segment_location = 'location';
+    }
+
     if ($location) {
       $area_term = taxonomy_term_load($location);
       $location_filter  = str_replace(' ', '-', $area_term->name);
-      $segment .= '/location/' . $location_filter;
+      $segment .= '/' . $segment_location . '/' . $location_filter;
     }
     if ($group_size) {
       // Filter search from group_size to 100 (A high number to match all
@@ -569,12 +635,11 @@ function property_bat_activity_facets_availability_validate($form, &$form_state)
       $segment .= '/capacity/[' . $group_size . ' TO 100]';
     }
 
-    drupal_goto('activities-search' . $segment, array(
-      'query' => array(
-        'location' => $location,
-        'group_size' => $group_size,
-      ),
-    ));
+    drupal_goto('activities-search' . $segment, array('query' => array(
+      $segment_location => $location,
+      'group_size' => $group_size,
+    )));
+
   }
 }
 
@@ -588,13 +653,20 @@ function property_bat_activity_facets_availability_submit($form, &$form_state) {
     $location = 'All';
   }
 
+  if (variable_get('roomify_availability_search_form_location', 'area') == 'area_type') {
+    $segment_location = 'field_sp_area_type';
+  }
+  else {
+    $segment_location = 'location';
+  }
+
   $group_size = $form_state['values']['group_size'];
   $segment = '';
 
   if ($location != 'All') {
     $area_term = taxonomy_term_load($location);
     $location_filter  = str_replace(' ', '-', $area_term->name);
-    $segment .= '/location/' . $location_filter;
+    $segment .= '/' . $segment_location . '/' . $location_filter;
   }
 
   if ($group_size) {
@@ -603,5 +675,5 @@ function property_bat_activity_facets_availability_submit($form, &$form_state) {
     $segment .= '/capacity/[' . $group_size . ' TO 100]';
   }
 
-  $form_state['redirect'] = array('activities-search' . $segment, array('query' => array('bat_activity_date' => $form_state['values']['arrival'], 'location' => $form_state['values']['location'], 'group_size' => $form_state['values']['group_size'])));
+  $form_state['redirect'] = array('activities-search' . $segment, array('query' => array('bat_activity_date' => $form_state['values']['arrival'], $segment_location => $form_state['values']['location'], 'group_size' => $form_state['values']['group_size'])));
 }
