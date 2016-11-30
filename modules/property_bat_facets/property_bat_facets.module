@@ -112,7 +112,7 @@ function property_bat_facets_availability($form, &$form_state) {
     }
   }
   elseif (variable_get('roomify_availability_search_form_location', 'area') == 'area_type') {
-    $options = array(0 => t('Areas types'));
+    $options = array(0 => t('All Area types'));
     $vid = taxonomy_vocabulary_machine_name_load('area_type')->vid;
     $terms = taxonomy_get_tree($vid);
     foreach ($terms as $term) {
