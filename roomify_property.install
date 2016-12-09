@@ -261,3 +261,42 @@ function roomify_property_update_7104() {
       ->execute();
   }
 }
+
+/**
+ * Add entity translation revisions for all existing properties.
+ */
+function roomify_property_update_7105() {
+  $sp_descriptions = db_select('field_data_field_sp_description', 'd')
+    ->fields('d', array('entity_id', 'revision_id', 'language'))
+    ->execute()
+    ->fetchAll();
+
+  foreach ($sp_descriptions as $sp_description) {
+    $property = roomify_property_load($sp_description->entity_id);
+
+    if ($property->language != $sp_description->language) {
+      foreach (array('entity_translation_revision', 'entity_translation') as $table_name) {
+        db_merge($table_name)
+          ->key(array(
+            'entity_type' => 'roomify_property',
+            'entity_id' => $property->property_id,
+            'language' => $sp_description->language,
+            'source' => $property->language,
+          ))
+          ->fields(array(
+            'entity_type' => 'roomify_property',
+            'entity_id' => $property->property_id,
+            'revision_id' => $property->property_id,
+            'language' => $sp_description->language,
+            'source' => $property->language,
+            'uid' => $property->uid,
+            'status' => 1,
+            'translate' => 0,
+            'created' => REQUEST_TIME,
+            'changed' => REQUEST_TIME,
+          ))
+          ->execute();
+      }
+    }
+  }
+}
