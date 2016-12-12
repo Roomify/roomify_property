@@ -114,8 +114,9 @@ function property_bat_facets_availability($form, &$form_state) {
   elseif (variable_get('roomify_availability_search_form_location', 'area') == 'area_type') {
     $options = array(0 => t('All Area types'));
     $vid = taxonomy_vocabulary_machine_name_load('area_type')->vid;
-    $terms = taxonomy_get_tree($vid);
+    $terms = taxonomy_get_tree($vid, 0, NULL, TRUE);
     foreach ($terms as $term) {
+      $name = field_get_items('taxonomy_term', $term, 'name_field');
       $options[$term->tid] = $term->name;
     }
   }
@@ -534,8 +535,9 @@ function property_bat_activity_facets_availability($form, &$form_state) {
   elseif (variable_get('roomify_availability_search_form_location', 'area') == 'area_type') {
     $options = array(0 => t('Areas types'));
     $vid = taxonomy_vocabulary_machine_name_load('area_type')->vid;
-    $terms = taxonomy_get_tree($vid);
+    $terms = taxonomy_get_tree($vid, 0, NULL, TRUE);
     foreach ($terms as $term) {
+      $name = field_get_items('taxonomy_term', $term, 'name_field');
       $options[$term->tid] = $term->name;
     }
   }
