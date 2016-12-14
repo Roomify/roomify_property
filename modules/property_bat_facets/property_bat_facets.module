@@ -243,8 +243,8 @@ function property_bat_facets_availability_validate($form, &$form_state) {
 
     if ($location) {
       $area_term = taxonomy_term_load($location);
-      $location_filter  = str_replace(' ', '-', $area_term->name);
-      $location_filter  = str_replace("'", '', $location_filter);
+      $location_filter = str_replace(' ', '-', $area_term->name);
+      $location_filter = str_replace("'", '', $location_filter);
 
       $segment .= '/' . $segment_location . '/' . $location_filter;
     }
@@ -299,7 +299,7 @@ function property_bat_facets_availability_submit($form, &$form_state) {
 
   if ($location != 'All') {
     $area_term = taxonomy_term_load($location);
-    $location_filter  = str_replace(' ', '-', $area_term->name);
+    $location_filter = str_replace(' ', '-', $area_term->name);
     $segment .= '/' . $segment_location . '/' . $location_filter;
   }
 
@@ -628,7 +628,7 @@ function property_bat_activity_facets_availability_validate($form, &$form_state)
 
     if ($location) {
       $area_term = taxonomy_term_load($location);
-      $location_filter  = str_replace(' ', '-', $area_term->name);
+      $location_filter = str_replace(' ', '-', $area_term->name);
       $segment .= '/' . $segment_location . '/' . $location_filter;
     }
     if ($group_size) {
@@ -668,7 +668,7 @@ function property_bat_activity_facets_availability_submit($form, &$form_state) {
 
   if ($location != 'All') {
     $area_term = taxonomy_term_load($location);
-    $location_filter  = str_replace(' ', '-', $area_term->name);
+    $location_filter = str_replace(' ', '-', $area_term->name);
     $segment .= '/' . $segment_location . '/' . $location_filter;
   }
 

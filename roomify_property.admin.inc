@@ -406,7 +406,7 @@ function roomify_property_edit_form($form, &$form_state, $property) {
     if (!empty($property->property_id)) {
       $options[REVISIONING_NO_REVISION] = t('Modify current revision, no moderation');
     }
-    $options[REVISIONING_NEW_REVISION_NO_MODERATION]  = t('Create new revision, no moderation');
+    $options[REVISIONING_NEW_REVISION_NO_MODERATION] = t('Create new revision, no moderation');
     $options[REVISIONING_NEW_REVISION_WITH_MODERATION] = t('Create new revision and moderate');
 
     $form['revisions']['revision_operation'] = array(

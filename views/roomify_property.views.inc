@@ -24,7 +24,7 @@ function roomify_property_views_data_alter(&$data) {
   );
 
   $data['roomify_properties_revision']['table']['entity type'] = 'roomify_property';
-  $data['roomify_properties_revision']['table']['group']  = t('Property revision');
+  $data['roomify_properties_revision']['table']['group'] = t('Property revision');
 
   $data['roomify_properties_revision']['table']['base'] = array(
     'field' => 'revision_id',
