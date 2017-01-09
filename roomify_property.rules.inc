@@ -1,6 +1,10 @@
 <?php
 
 /**
+ * @file
+ */
+
+/**
  * Implements hook_rules_event_info().
  */
 function roomify_property_rules_event_info() {

@@ -9,9 +9,9 @@
  *
  * @param object $property
  *   RoomifyProperty on which to perform comparison
- * @param integer $old_revision_id
+ * @param int $old_revision_id
  *   Version ID of the old revision.
- * @param integer $new_revision_id
+ * @param int $new_revision_id
  *   Version ID of the new revision.
  */
 function roomify_property_compare_revisions($property, $old_revision_id, $new_revision_id) {

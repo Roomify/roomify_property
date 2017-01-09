@@ -251,7 +251,7 @@ function roomify_property_access_revision($op, $property, $revision_id, $account
  * @param object $account
  *   The user to check for. Leave it to NULL to check for the global user.
  *
- * @return boolean
+ * @return bool
  *   Whether access is allowed or not.
  */
 function roomify_property_access($op, $property = NULL, $account = NULL) {
@@ -314,6 +314,9 @@ function roomify_property_manage_types_access($property) {
  */
 class RoomifyProperty extends Entity {
 
+  /**
+   *
+   */
   public function __construct($values = array()) {
     parent::__construct($values, 'roomify_property');
   }
@@ -369,6 +372,9 @@ class RoomifyPropertyType extends Entity {
    */
   public $label;
 
+  /**
+   *
+   */
   public function __construct($values = array()) {
     parent::__construct($values, 'roomify_property_type');
   }
@@ -380,6 +386,9 @@ class RoomifyPropertyType extends Entity {
  */
 class RoomifyPropertyMetadataController extends EntityDefaultMetadataController {
 
+  /**
+   *
+   */
   public function entityPropertyInfo() {
     $info = parent::entityPropertyInfo();
 
