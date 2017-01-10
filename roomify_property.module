@@ -1187,7 +1187,19 @@ function roomify_property_wizard_form_type_info($form, &$form_state) {
         $form['types_container'][$i]['standard_duration'] = array(
           '#type' => 'interval',
           '#size' => 10,
+          '#title' => t('Standard Duration'),
+          '#required' => TRUE,
+        );
+        $form['types_container'][$i]['minimum_duration'] = array(
+          '#type' => 'interval',
+          '#size' => 10,
           '#title' => t('Minimum Duration'),
+          '#required' => TRUE,
+        );
+        $form['types_container'][$i]['maximum_duration'] = array(
+          '#type' => 'interval',
+          '#size' => 10,
+          '#title' => t('Maximum Duration'),
           '#required' => TRUE,
         );
         // Opening Time informations.
@@ -1452,7 +1464,7 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
 
       $type_ids = array();
       for ($i = 0; $i < count($type_values); $i++) {
-        if ($type_values[$i]['name'] != '' && $type_values[$i]['rooms'] != '' && $type_values[$i]['max_occupancy'] != '' && $type_values[$i]['standard_duration'] != '' && $type_values[$i]['opening_hours'] != '') {
+        if ($type_values[$i]['name'] != '' && $type_values[$i]['rooms'] != '' && $type_values[$i]['max_occupancy'] != '' && $type_values[$i]['standard_duration'] != '' && $type_values[$i]['minimum_duration'] && $type_values[$i]['maximum_duration'] != '' && $type_values[$i]['opening_hours'] != '') {
           // Create type.
           $type = bat_type_create(
             array(
@@ -1464,10 +1476,18 @@ function roomify_property_wizard_form_submit($form, &$form_state) {
           );
 
           $type->space_capacity[LANGUAGE_NONE][0]['value'] = $type_values[$i]['max_occupancy'];
+
           $type->space_default_price[LANGUAGE_NONE][0]['amount'] = ($type_values[$i]['default_price'] != '') ? $type_values[$i]['default_price'] * 100 : 0;
           $type->space_default_price[LANGUAGE_NONE][0]['currency_code'] = commerce_default_currency();
+
           $type->space_standard_duration[LANGUAGE_NONE][0]['interval'] = $type_values[$i]['standard_duration']['interval'];
           $type->space_standard_duration[LANGUAGE_NONE][0]['period'] = $type_values[$i]['standard_duration']['period'];
+
+          $type->space_minimum_duration[LANGUAGE_NONE][0]['interval'] = $type_values[$i]['minimum_duration']['interval'];
+          $type->space_minimum_duration[LANGUAGE_NONE][0]['period'] = $type_values[$i]['minimum_duration']['period'];
+
+          $type->space_maximum_duration[LANGUAGE_NONE][0]['interval'] = $type_values[$i]['maximum_duration']['interval'];
+          $type->space_maximum_duration[LANGUAGE_NONE][0]['period'] = $type_values[$i]['maximum_duration']['period'];
 
           $opening_time = $type_values[$i]['opening_hours']['opening_hour'] . $type_values[$i]['opening_hours']['opening_minute'];
           $closing_time = $type_values[$i]['opening_hours']['closing_hour'] . $type_values[$i]['opening_hours']['closing_minute'];
