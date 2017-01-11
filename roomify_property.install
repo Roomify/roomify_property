@@ -268,6 +268,7 @@ function roomify_property_update_7104() {
 function roomify_property_update_7105() {
   $sp_descriptions = db_select('field_data_field_sp_description', 'd')
     ->fields('d', array('entity_id', 'revision_id', 'language'))
+    ->condition('entity_type', 'roomify_property')
     ->execute()
     ->fetchAll();
 
