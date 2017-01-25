@@ -1618,7 +1618,7 @@ function roomify_type_wizard($property, $ajax) {
 
     // Use ctools to generate ajax instructions for the browser to create
     // a form in a modal popup.
-    $output = ctools_modal_form_wrapper('roomify_type_wizard_form', $form_state, $property->property_id);
+    $output = ctools_modal_form_wrapper('roomify_type_wizard_form', $form_state);
 
     // If the form has been submitted, there may be additional instructions
     // such as dismissing the modal popup.
@@ -1631,14 +1631,14 @@ function roomify_type_wizard($property, $ajax) {
     drupal_exit();
   }
   else {
-    return drupal_get_form('roomify_type_wizard_form', $property->property_id);
+    return drupal_get_form('roomify_type_wizard_form');
   }
 }
 
 /**
  * Roomify Add Type Wizard form main callback.
  */
-function roomify_type_wizard_form($form, &$form_state, $property_id) {
+function roomify_type_wizard_form($form, &$form_state) {
   drupal_set_title(t('Add Types'));
 
   // Call the function named in $form_state['step_information'] to get the
