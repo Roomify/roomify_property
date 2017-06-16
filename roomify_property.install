@@ -6,6 +6,14 @@
  */
 
 /**
+ * Implements hook_install().
+ */
+function roomify_property_install() {
+  // Add Pathauto module support.
+  variable_set('pathauto_roomify_property_pattern', 'listing/[roomify_property:name]');
+}
+
+/**
  * Implements hook_schema().
  */
 function roomify_property_schema() {
@@ -300,4 +308,11 @@ function roomify_property_update_7105() {
       }
     }
   }
+}
+
+/**
+ * Add Pathauto module support.
+ */
+function roomify_property_update_7106() {
+  variable_set('pathauto_roomify_property_pattern', 'listing/[roomify_property:name]');
 }

@@ -328,7 +328,6 @@ function roomify_property_edit_form($form, &$form_state, $property) {
   // Add the field related form elements.
   $form_state['roomify_property'] = $property;
 
-  field_attach_form('roomify_property', $property, $form, $form_state, entity_language('roomify_property', $property));
   // Hide type reference field in favor of 'Rooms' tab.
   $form['property_bat_type_reference']['#access'] = FALSE;
 
@@ -336,6 +335,69 @@ function roomify_property_edit_form($form, &$form_state, $property) {
     '#type' => 'vertical_tabs',
     '#weight' => 99,
   );
+
+  if (module_exists('path')) {
+    $path = array();
+
+    $uri = $property->uri();
+
+    if (!empty($property->property_id)) {
+      $conditions = array('source' => $uri['path']);
+      $langcode = entity_language('roomify_property', $property);
+
+      if ($langcode != LANGUAGE_NONE) {
+        $conditions['language'] = $langcode;
+      }
+
+      $path = path_load($conditions);
+      if ($path === FALSE) {
+        $path = array();
+      }
+    }
+
+    $path += array(
+      'pid' => NULL,
+      'source' => isset($property->property_id) ? $uri['path'] : NULL,
+      'alias' => '',
+      'language' => isset($langcode) ? $langcode : LANGUAGE_NONE,
+    );
+
+    $form['path'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('URL path settings'),
+      '#collapsible' => TRUE,
+      '#collapsed' => empty($path['alias']),
+      '#group' => 'additional_settings',
+      '#attributes' => array(
+        'class' => array('path-form'),
+      ),
+      '#attached' => array(
+        'js' => array(drupal_get_path('module', 'path') . '/path.js'),
+      ),
+      '#access' => user_access('create url aliases') || user_access('administer url aliases'),
+      '#weight' => 30,
+      '#tree' => TRUE,
+      '#element_validate' => array('path_form_element_validate'),
+    );
+
+    $form['path']['alias'] = array(
+      '#type' => 'textfield',
+      '#title' => t('URL alias'),
+      '#default_value' => $path['alias'],
+      '#maxlength' => 255,
+      '#description' => t('Optionally specify an alternative URL by which this property can be accessed. Use a relative path and don\'t add a trailing slash or the URL alias won\'t work.'),
+    );
+
+    // Add in the fixed values.
+    foreach (array('pid', 'source', 'language') as $fixed) {
+      $form['path'][$fixed] = array(
+        '#type' => 'value',
+        '#value' => $path[$fixed],
+      );
+    }
+  }
+
+  field_attach_form('roomify_property', $property, $form, $form_state, entity_language('roomify_property', $property));
 
   // Type author information for administrators.
   $form['author'] = array(

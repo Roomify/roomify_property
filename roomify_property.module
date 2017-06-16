@@ -46,6 +46,7 @@ function roomify_property_entity_info() {
       'bundle' => 'type',
       'revision' => 'revision_id',
       'label' => 'name',
+      'language' => 'language',
     ),
     // Bundles are defined by the property bundles below.
     'bundles' => array(),
@@ -434,6 +435,7 @@ class RoomifyPropertyController extends EntityAPIController {
       'data' => '',
       'name' => '',
       'created' => '',
+      'language' => LANGUAGE_NONE,
     );
 
     $property = parent::create($values);
@@ -457,6 +459,38 @@ class RoomifyPropertyController extends EntityAPIController {
     parent::save($entity);
 
     $entity->revision = FALSE;
+
+    // Add Path module support.
+    if (module_exists('path')) {
+      $this->savePath($entity);
+    }
+
+    // Add Pathauto module support.
+    if (module_exists('pathauto') && module_exists('entity_token')) {
+      module_load_include('inc', 'roomify_property', 'roomify_property.pathauto');
+      roomify_property_pathauto_update_alias($entity, empty($entity->is_new) ? 'update' : 'insert');
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function delete($ids) {
+    foreach (roomify_property_load_multiple($ids) as $property) {
+      $uri = $property->uri();
+
+      // Add Path module support.
+      if (module_exists('path')) {
+        $this->deletePath($property);
+      }
+
+      // Add Pathauto module support.
+      if (module_exists('pathauto') && module_exists('entity_token')) {
+        pathauto_entity_path_delete_all('roomify_property', $property, $uri['path']);
+      }
+    }
+
+    parent::delete($ids);
   }
 
   /**
@@ -466,6 +500,50 @@ class RoomifyPropertyController extends EntityAPIController {
     $content = parent::buildContent($entity, $view_mode, $langcode, $content);
 
     return $content;
+  }
+
+  /**
+   * Updates a property path alias upon saving.
+   *
+   * @param RoomifyProperty $property
+   *   The property being saved.
+   */
+  public function savePath(RoomifyProperty $property) {
+    $uri = $property->uri();
+
+    if (isset($property->path)) {
+      $path = $property->path;
+      $path['alias'] = trim($path['alias']);
+
+      // Delete old alias if user erased it.
+      if (empty($property->is_new)) {
+        if (!empty($path['pid']) && empty($path['alias'])) {
+          path_delete($path['pid']);
+        }
+      }
+
+      // Only save a non-empty alias.
+      if (!empty($path['alias'])) {
+        // Ensure fields for programmatic executions.
+        $langcode = entity_language('roomify_property', $property);
+
+        $path['source'] = $uri['path'];
+        $path['language'] = isset($langcode) ? $langcode : LANGUAGE_NONE;
+
+        path_save($path);
+      }
+    }
+  }
+
+  /**
+   * Removes property path alias upon deletion.
+   *
+   * @param RoomifyProperty $property
+   *   The property being deleted.
+   */
+  public function deletePath(RoomifyProperty $property) {
+    $uri = $property->uri();
+    path_delete(array('source' => $uri['path']));
   }
 
 }
@@ -551,6 +629,22 @@ function roomify_property_get_types($type_name = NULL, $reset = FALSE) {
   // entity and call the load function of that object.
   $types = entity_load_multiple_by_name('roomify_property_type', isset($type_name) ? array($type_name) : FALSE);
   return isset($type_name) ? reset($types) : $types;
+}
+
+/**
+ * Retrieve all property type labels.
+ *
+ * Ideally used for populating option lists.
+ *
+ * @return array
+ *   An array of RoomifyProperty labels, keyed by their machine names.
+ */
+function roomify_property_type_labels() {
+  $property_types = roomify_property_get_types();
+  foreach ($property_types as &$property_type) {
+    $property_type = $property_type->label();
+  }
+  return $property_types;
 }
 
 /**
