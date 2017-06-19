@@ -328,9 +328,6 @@ function roomify_property_edit_form($form, &$form_state, $property) {
   // Add the field related form elements.
   $form_state['roomify_property'] = $property;
 
-  // Hide type reference field in favor of 'Rooms' tab.
-  $form['property_bat_type_reference']['#access'] = FALSE;
-
   $form['additional_settings'] = array(
     '#type' => 'vertical_tabs',
     '#weight' => 99,
@@ -398,6 +395,9 @@ function roomify_property_edit_form($form, &$form_state, $property) {
   }
 
   field_attach_form('roomify_property', $property, $form, $form_state, entity_language('roomify_property', $property));
+
+  // Hide type reference field in favor of 'Rooms' tab.
+  $form['property_bat_type_reference']['#access'] = FALSE;
 
   // Type author information for administrators.
   $form['author'] = array(
