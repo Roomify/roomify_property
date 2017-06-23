@@ -206,6 +206,27 @@ function roomify_property_views_api() {
 }
 
 /**
+ * Implements hook_views_plugins().
+ */
+function roomify_property_views_plugins() {
+  $module_path = drupal_get_path('module', 'roomify_property');
+
+  return array(
+    'row' => array(
+      'availability_calendar_plugin_rows' => array(
+        'title' => t('Availability calendar'),
+        'help' => t('Availability calendar.'),
+        'path' => $module_path . '/views/plugins/calendar',
+        'handler' => 'AvailabilityCalendarPluginRows',
+        'uses fields' => FALSE,
+        'uses options' => TRUE,
+        'type' => 'normal',
+      ),
+    ),
+  );
+}
+
+/**
  * Determines whether the given user has access to a property revision.
  *
  * @param string $op
