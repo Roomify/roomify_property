@@ -223,6 +223,17 @@ function roomify_property_views_plugins() {
         'type' => 'normal',
       ),
     ),
+    'style' => array(
+      'availability_calendar_plugin_one_row' => array(
+        'title' => t('Availability calendar'),
+        'help' => t('Availability calendar.'),
+        'path' => $module_path . '/views/plugins/calendar',
+        'handler' => 'AvailabilityCalendarPluginOneRow',
+        'uses row plugin' => FALSE,
+        'uses options' => TRUE,
+        'type' => 'normal',
+      ),
+    ),
   );
 }
 

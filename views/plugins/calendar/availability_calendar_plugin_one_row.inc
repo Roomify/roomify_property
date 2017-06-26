@@ -7,24 +7,14 @@
 /**
  *
  */
-class AvailabilityCalendarPluginRows extends views_plugin_row {
+class AvailabilityCalendarPluginOneRow extends views_plugin_style {
 
   /**
    * {@inheritdoc}
    */
-  public function init(&$view, &$display, $options = NULL) {
-    parent::init($view, $display, $options);
-
-    // Initialize the entity-type used.
-    $table_data = views_fetch_data($this->view->base_table);
-    $this->entity_type = $table_data['table']['entity type'];
-    // Set base table and field information as used by views_plugin_row to
-    // select the entity id if used with default query class.
-    $info = entity_get_info($this->entity_type);
-    if (!empty($info['base table']) && $info['base table'] == $this->view->base_table) {
-      $this->base_table = $info['base table'];
-      $this->base_field = $info['entity keys']['id'];
-    }
+  public function query() {
+    $this->view->query->add_field($this->view->base_table, $this->view->base_field);
+    parent::query();
   }
 
   /**
@@ -60,14 +50,27 @@ class AvailabilityCalendarPluginRows extends views_plugin_row {
   /**
    * {@inheritdoc}
    */
-  public function render($values) {
-    $property = roomify_property_load($values->property_id);
-
-    $output = '<h2 class="property-title">' . $property->name . '</h2>';
-
+  public function render() {
     $types = array();
-    foreach ($property->property_bat_type_reference[LANGUAGE_NONE] as $type) {
-      $types[] = $type['target_id'];
+
+    $grouping_ids = array();
+
+    foreach ($this->view->result as $row) {
+      $property = roomify_property_load($row->property_id);
+
+      $grouping_ids[$property->property_id] = array();
+
+      foreach ($property->property_bat_type_reference[LANGUAGE_NONE] as $type) {
+        $types[] = $type['target_id'];
+        $grouping_ids[$property->property_id][] = $type['target_id'];
+      }
+
+      if (empty($grouping_ids[$property->property_id])) {
+        unset($grouping_ids[$property->property_id]);
+      }
+      else {
+        $grouping_ids[$property->property_id] = $property->property_id . ':' . implode(',', $grouping_ids[$property->property_id]);
+      }
     }
 
     $event_type = bat_event_type_load($this->options['event_type']);
@@ -79,6 +82,9 @@ class AvailabilityCalendarPluginRows extends views_plugin_row {
         'unitType' => implode(',', $types),
         'eventType' => $this->options['event_type'],
         'calendar_id' => 'fullcalendar-scheduler',
+        'grouping_entity_type' => 'roomify_property',
+        'grouping_ids' => implode(';', $grouping_ids),
+        'calendarHeight' => 'auto',
         'eventGranularity' => $event_type->event_granularity,
       ),
     );
@@ -89,7 +95,7 @@ class AvailabilityCalendarPluginRows extends views_plugin_row {
       'user_settings' => array('batCalendar' => $fc_user_settings),
     );
 
-    $output .= theme('bat_fullcalendar', array(
+    $output = theme('bat_fullcalendar', array(
       'calendar_settings' => $calendar_settings,
       'attributes' => array(
         'id' => $calendar_id,
