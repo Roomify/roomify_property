@@ -84,6 +84,7 @@ class AvailabilityCalendarPluginOneRow extends views_plugin_style {
         'calendar_id' => 'fullcalendar-scheduler',
         'grouping_entity_type' => 'roomify_property',
         'grouping_ids' => implode(';', $grouping_ids),
+        'collapse_childrens' => 1,
         'calendarHeight' => 'auto',
         'eventGranularity' => $event_type->event_granularity,
       ),
