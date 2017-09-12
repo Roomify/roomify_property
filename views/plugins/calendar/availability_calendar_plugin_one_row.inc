@@ -61,7 +61,9 @@ class AvailabilityCalendarPluginOneRow extends views_plugin_style {
       $grouping_ids[$property->property_id] = array();
 
       foreach ($property->property_bat_type_reference[LANGUAGE_NONE] as $type) {
-        $types[] = $type['target_id'];
+        if (!in_array($type['target_id'], $types)) {
+          $types[] = $type['target_id'];
+        }
         $grouping_ids[$property->property_id][] = $type['target_id'];
       }
 
