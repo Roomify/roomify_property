@@ -77,7 +77,7 @@ class AvailabilityCalendarPluginOneRow extends views_plugin_style {
 
     $event_type = bat_event_type_load($this->options['event_type']);
 
-    $calendar_id = drupal_html_id('availability_calendar_' . $property->property_id);
+    $calendar_id = drupal_html_id('availability_calendar');
 
     $fc_user_settings = array(
       array(
