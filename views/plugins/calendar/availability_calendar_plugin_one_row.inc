@@ -51,6 +51,8 @@ class AvailabilityCalendarPluginOneRow extends views_plugin_style {
    * {@inheritdoc}
    */
   public function render() {
+    global $theme;
+
     $types = array();
 
     $grouping_ids = array();
@@ -89,6 +91,8 @@ class AvailabilityCalendarPluginOneRow extends views_plugin_style {
         'collapse_childrens' => 1,
         'calendarHeight' => 'auto',
         'eventGranularity' => $event_type->event_granularity,
+        'themeSystem' => ($theme == 'roomify_travel') ? 'bootstrap3' : 'standard',
+        'slotWidth' => 55,
       ),
     );
 
