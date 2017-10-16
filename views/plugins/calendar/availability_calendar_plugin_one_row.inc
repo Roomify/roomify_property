@@ -92,6 +92,9 @@ class AvailabilityCalendarPluginOneRow extends views_plugin_style {
         'calendarHeight' => 'auto',
         'eventGranularity' => $event_type->event_granularity,
         'themeSystem' => ($theme == 'roomify_travel') ? 'bootstrap3' : 'standard',
+        'editable' => ($theme == 'roomify_travel') ? FALSE : TRUE,
+        'selectable' => ($theme == 'roomify_travel') ? FALSE : TRUE,
+        'enableModal' => ($theme == 'roomify_travel') ? FALSE : TRUE,
         'slotWidth' => 55,
       ),
     );
