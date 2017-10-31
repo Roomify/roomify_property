@@ -999,7 +999,7 @@ function roomify_property_wizard_form($form, &$form_state) {
     $form_state['step_information'] = _roomify_property_wizard_steps();
   }
   $step = &$form_state['step'];
-  drupal_set_title(t('Add Property: Step @step', array('@step' => $step)));
+  drupal_set_title(t('Add Property: Step !step', array('!step' => $step)));
 
   // Call the function named in $form_state['step_information'] to get the
   // form elements to display for this step.

@@ -258,7 +258,7 @@ function roomify_property_form($form, &$form_state, $property, $op = 'edit') {
   global $user;
   // Add the breadcrumb for the form's location.
   roomify_property_set_breadcrumb();
-  drupal_set_title(t('Edit @property_name', array('@property_name' => $property->name)));
+  drupal_set_title(t('Edit !property_name', array('!property_name' => $property->name)));
 
   $property->date = format_date($property->created, 'custom', 'Y-m-d H:i:s O');
   $account = user_load($property->uid);
