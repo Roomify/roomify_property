@@ -299,8 +299,8 @@ function roomify_property_access($op, $property = NULL, $account = NULL) {
 
   if ($op == 'view' && $property !== NULL) {
     if ($property->status == 0) {
-      if (!((user_access('view any unpublished properties') ||
-            (user_access('view own unpublished properties') && $account->uid == $property->uid)))) {
+      if (!((user_access('view any unpublished properties', $account) ||
+            (user_access('view own unpublished properties', $account) && $account->uid == $property->uid)))) {
         return FALSE;
       }
     }
