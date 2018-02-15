@@ -89,7 +89,7 @@ class AvailabilityCalendarPluginOneRow extends views_plugin_style {
         'grouping_entity_type' => 'roomify_property',
         'grouping_ids' => implode(';', $grouping_ids),
         'collapse_childrens' => 1,
-        'calendarHeight' => 'auto',
+        'calendarHeight' => 'parent',
         'eventGranularity' => $event_type->event_granularity,
         'themeSystem' => ($theme == 'roomify_travel') ? 'bootstrap3' : 'standard',
         'editable' => ($theme == 'roomify_travel') ? FALSE : TRUE,
