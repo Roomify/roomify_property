@@ -478,7 +478,7 @@ class RoomifyPropertyController extends EntityAPIController {
   /**
    * {@inheritdoc}
    */
-  public function save($entity) {
+  public function save($entity, DatabaseTransaction $transaction = NULL) {
     global $user;
 
     $entity->revision_uid = $user->uid;
@@ -507,7 +507,7 @@ class RoomifyPropertyController extends EntityAPIController {
   /**
    * {@inheritdoc}
    */
-  public function delete($ids) {
+  public function delete($ids, DatabaseTransaction $transaction = NULL) {
     foreach (roomify_property_load_multiple($ids) as $property) {
       $uri = $property->uri();
 
