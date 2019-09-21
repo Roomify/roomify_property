@@ -323,6 +323,8 @@ function property_bat_facets_availability_submit($form, &$form_state) {
  *   The search query being executed.
  */
 function property_bat_facets_search_api_query_alter($query) {
+  $cached_data = &drupal_static(__FUNCTION__);
+
   if ($query->getIndex()->getEntityType()) {
     $info = entity_get_info($query->getIndex()->getEntityType());
 
@@ -357,45 +359,57 @@ function property_bat_facets_search_api_query_alter($query) {
             $end_date->sub(new DateInterval('PT1M'));
 
             if ($start_date <= $end_date) {
-              $event_type = $settings->settings['event_type'];
+              $index_machine_name = $query->getIndex()->machine_name;
 
-              $valid_states = $settings->settings['states'];
-
-              $valid_states_names = array();
-              foreach ($valid_states as $state_id) {
-                $state = bat_event_load_state($state_id);
-                $valid_states_names[] = $state['machine_name'];
+              if (isset($cached_data[$index_machine_name])) {
+                $valid_properties_ids = $cached_data[$index_machine_name];
               }
+              else {
+                $event_type = $settings->settings['event_type'];
 
-              $valid_properties_ids = array();
+                $valid_states = $settings->settings['states'];
 
-              $properties = entity_load('roomify_property', FALSE, array(), TRUE);
-              $properties_ids = roomify_property_ids();
+                $valid_states_names = array();
+                foreach ($valid_states as $state_id) {
+                  $state = bat_event_load_state($state_id);
+                  $valid_states_names[] = $state['machine_name'];
+                }
 
-              foreach ($properties as $property) {
-                $types = field_get_items('roomify_property', $property, 'property_bat_type_reference');
+                $valid_properties_ids = array();
 
-                if (!empty($types)) {
-                  foreach ($types as $type_id) {
-                    $type = bat_type_load($type_id['target_id']);
+                $properties = entity_load('roomify_property', FALSE, array(), TRUE);
+                $properties_ids = roomify_property_ids();
 
-                    if (bat_event_get_matching_units($start_date, $end_date, $valid_states_names, $type->type_id, $event_type) !== FALSE) {
-                      // Include the property in the search.
-                      $valid_properties_ids[] = $property->property_id;
+                foreach ($properties as $property) {
+                  $types = field_get_items('roomify_property', $property, 'property_bat_type_reference');
+
+                  if (!empty($types)) {
+                    foreach ($types as $type_id) {
+                      $type = bat_type_load($type_id['target_id']);
+
+                      if (bat_event_get_matching_units($start_date, $end_date, $valid_states_names, $type->type_id, $event_type) !== FALSE) {
+                        // Include the property in the search.
+                        $valid_properties_ids[] = $property->property_id;
+
+                        break;
+                      }
                     }
                   }
                 }
+
+                $context = array(
+                  'types_before_search' => $properties_ids,
+                  'start_date' => $start_date,
+                  'end_date' => $end_date,
+                  'event_type' => $event_type,
+                  'valid_states' => $valid_states,
+                );
+
+                drupal_alter('property_bat_facets_search_results', $valid_properties_ids, $context);
+
+                // Cache valid_properties_ids.
+                $cached_data[$index_machine_name] = $valid_properties_ids;
               }
-
-              $context = array(
-                'types_before_search' => $properties_ids,
-                'start_date' => $start_date,
-                'end_date' => $end_date,
-                'event_type' => $event_type,
-                'valid_states' => $valid_states,
-              );
-
-              drupal_alter('property_bat_facets_search_results', $valid_properties_ids, $context);
 
               // If no types are available, zero out results.
               if (empty($valid_properties_ids)) {
